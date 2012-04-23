@@ -1,3 +1,5 @@
+Sample drawing:
+![](https://github.com/krzysztofzablocki/smooth-drawing/raw/master/Example.png)
 Purpose
 --------------
 
