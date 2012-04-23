@@ -10,6 +10,6 @@ I decided to create this after finding out that there isn't really a complete so
 ARC Compatibility
 ------------------
 
-Project uses ARC, I put all the code inside LineDrawer class ( don't worry it's only ~500 lines ) so that you can just add -fno-objc-arc in non-ARC projects.
+Project uses ARC, I put all the code inside LineDrawer class ( don't worry it's only ~500 lines ) so that you can just add -fobjc-arc on this class in non-ARC projects.
 
 Spread the word and read my blog post about this project to learn more.
