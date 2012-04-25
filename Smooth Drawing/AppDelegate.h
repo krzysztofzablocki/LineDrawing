@@ -13,7 +13,7 @@
 	CCDirectorIOS	*__unsafe_unretained director_;							// weak ref
 }
 
-@property (nonatomic) UIWindow *window;
+@property (nonatomic, retain) UIWindow *window;
 @property (readonly) UINavigationController *navController;
 @property (unsafe_unretained, readonly) CCDirectorIOS *director;
 
