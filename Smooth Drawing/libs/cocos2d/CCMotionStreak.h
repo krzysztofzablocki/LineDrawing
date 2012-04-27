@@ -44,6 +44,7 @@
 
     NSUInteger maxPoints_;
     NSUInteger nuPoints_;
+	NSUInteger previousNuPoints_;
 
     /** Pointers */
     CGPoint *pointVertexes_;
@@ -55,6 +56,8 @@
     ccTex2F *texCoords_;
 
     BOOL	fastMode_;
+	
+	BOOL	startingPositionInitialized_;
 }
 /** blending function */
 @property (nonatomic, readwrite, assign) ccBlendFunc blendFunc;

@@ -43,6 +43,7 @@
 @synthesize supportsNPOT = supportsNPOT_;
 @synthesize supportsBGRA8888 = supportsBGRA8888_;
 @synthesize supportsDiscardFramebuffer = supportsDiscardFramebuffer_;
+@synthesize supportsShareableVAO = supportsShareableVAO_;
 @synthesize OSVersion = OSVersion_;
 
 //
@@ -135,6 +136,9 @@ static char * glExtensions;
 		supportsBGRA8888_ = [self checkForGLExtension:@"GL_EXT_bgra"];
 #endif
 
+		supportsShareableVAO_ = [self checkForGLExtension:@"GL_APPLE_vertex_array_object"];
+
+		
 		supportsDiscardFramebuffer_ = [self checkForGLExtension:@"GL_EXT_discard_framebuffer"];
 
 		CCLOG(@"cocos2d: GL_MAX_TEXTURE_SIZE: %d", maxTextureSize_);
@@ -144,7 +148,19 @@ static char * glExtensions;
 		CCLOG(@"cocos2d: GL supports BGRA8888 textures: %s", (supportsBGRA8888_ ? "YES" : "NO") );
 		CCLOG(@"cocos2d: GL supports NPOT textures: %s", (supportsNPOT_ ? "YES" : "NO") );
 		CCLOG(@"cocos2d: GL supports discard_framebuffer: %s", (supportsDiscardFramebuffer_ ? "YES" : "NO") );
+		CCLOG(@"cocos2d: GL supports shareable VAO: %s", (supportsShareableVAO_ ? "YES" : "NO") );
 
+#ifdef __CC_PLATFORM_MAC
+		CCLOG(@"cocos2d: Director's thread: %@",
+#if (CC_DIRECTOR_MAC_THREAD == CC_MAC_USE_MAIN_THREAD)
+			  @"Main thread"
+#elif (CC_DIRECTOR_MAC_THREAD == CC_MAC_USE_OWN_THREAD)
+			  @"Own thread"	
+#elif (CC_DIRECTOR_MAC_THREAD == CC_MAC_USE_DISPLAY_LINK_THREAD)
+			  @"DisplayLink thread"
+#endif //
+			  );
+#endif // Mac
 
 		CCLOG(@"cocos2d: compiled with Profiling Support: %s",
 #if CC_ENABLE_PROFILERS

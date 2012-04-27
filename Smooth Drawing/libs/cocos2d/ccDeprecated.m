@@ -83,6 +83,17 @@ void ccGLUniformModelViewProjectionMatrix( CCGLProgram* program )
 }
 @end
 
+@implementation CCNode (Deprecated)
+-(void) setIsRelativeAnchorPoint:(BOOL)value
+{
+	[self setIgnoreAnchorPointForPosition:!value];
+}
+-(BOOL) isRelativeAnchorPoint
+{
+	return ! self.ignoreAnchorPointForPosition;
+}
+@end
+
 @implementation CCSprite (Deprecated)
 
 +(id) spriteWithBatchNode:(CCSpriteBatchNode*)node rect:(CGRect)rect
@@ -101,7 +112,7 @@ void ccGLUniformModelViewProjectionMatrix( CCGLProgram* program )
 
 -(CCSpriteFrame*) displayedFrame
 {
-	return [self displayedFrame];
+	return [self displayFrame];
 }
 @end
 
@@ -304,15 +315,82 @@ void ccGLUniformModelViewProjectionMatrix( CCGLProgram* program )
 #endif
 @end
 
-#if __CC_PLATFORM_IOS
 @implementation CCFileUtils (Deprecated)
++(NSString*) fullPathFromRelativePath:(NSString*) relPath
+{
+	return [[self sharedFileUtils] fullPathFromRelativePath:relPath];
+}
+
++(NSString*) fullPathFromRelativePath:(NSString*)relPath resolutionType:(ccResolutionType*)resolutionType
+{
+	return [[self sharedFileUtils] fullPathFromRelativePath:relPath resolutionType:resolutionType];
+}
+
+#if __CC_PLATFORM_IOS
 +(void) setRetinaDisplaySuffix:(NSString*)suffix
 {
-	return [self setiPhoneRetinaDisplaySuffix:suffix];
+	return [[self sharedFileUtils] setiPhoneRetinaDisplaySuffix:suffix];
+}
++(NSString *)removeSuffixFromFile:(NSString*) path
+{
+	return [[self sharedFileUtils] removeSuffixFromFile:path];
+}
++(BOOL) iPhoneRetinaDisplayFileExistsAtPath:(NSString*)filename
+{
+	return [[self sharedFileUtils] iPhoneRetinaDisplayFileExistsAtPath:filename];
+}
++(BOOL) iPadFileExistsAtPath:(NSString*)filename
+{
+	return [[self sharedFileUtils] iPadFileExistsAtPath:filename];
+}
++(BOOL) iPadRetinaDisplayFileExistsAtPath:(NSString*)filename
+{
+	return [[self sharedFileUtils] iPadRetinaDisplayFileExistsAtPath:filename];
+}
+#endif
+@end
+
+@implementation CCSpriteFrameCache (Deprecated)
+-(void) addSpriteFramesWithDictionary:(NSDictionary*)dictionary textureFile:(NSString*)filename
+{
+	[self addSpriteFramesWithDictionary:dictionary textureFilename:filename];
+}
+
+-(void) addSpriteFramesWithFile:(NSString*)plist textureFile:(NSString*)filename
+{
+	[self addSpriteFramesWithFile:plist textureFilename:filename];
 }
 @end
-#endif
 
+@implementation CCLabelTTF (Deprecated)
++ (id) labelWithString:(NSString*)string dimensions:(CGSize)dimensions alignment:(CCTextAlignment)alignment fontName:(NSString*)name fontSize:(CGFloat)size
+{
+	return [self labelWithString:string dimensions:dimensions hAlignment:alignment fontName:name fontSize:size];
+}
++ (id) labelWithString:(NSString*)string dimensions:(CGSize)dimensions alignment:(CCTextAlignment)alignment lineBreakMode:(CCLineBreakMode)lineBreakMode fontName:(NSString*)name fontSize:(CGFloat)size
+{
+	return [self labelWithString:string dimensions:dimensions hAlignment:alignment lineBreakMode:lineBreakMode fontName:name fontSize:size];
+}
+- (id) initWithString:(NSString*)string dimensions:(CGSize)dimensions alignment:(CCTextAlignment)alignment fontName:(NSString*)name fontSize:(CGFloat)size
+{
+	return [self initWithString:string dimensions:dimensions hAlignment:alignment fontName:name fontSize:size];
+}
+- (id) initWithString:(NSString*)string dimensions:(CGSize)dimensions alignment:(CCTextAlignment)alignment lineBreakMode:(CCLineBreakMode)lineBreakMode fontName:(NSString*)name fontSize:(CGFloat)size
+{
+	return [self initWithString:string dimensions:dimensions hAlignment:alignment lineBreakMode:lineBreakMode fontName:name fontSize:size];
+}
+@end
+
+@implementation CCTexture2D (Deprecated)
+- (id) initWithString:(NSString*)string dimensions:(CGSize)dimensions alignment:(CCTextAlignment)alignment lineBreakMode:(CCLineBreakMode)lineBreakMode fontName:(NSString*)name fontSize:(CGFloat)size
+{
+	return  [self initWithString:string dimensions:dimensions hAlignment:alignment vAlignment:CCVerticalTextAlignmentTop lineBreakMode:lineBreakMode fontName:name fontSize:size];
+}
+- (id) initWithString:(NSString*)string dimensions:(CGSize)dimensions alignment:(CCTextAlignment)alignment fontName:(NSString*)name fontSize:(CGFloat)size
+{
+	return [self initWithString:string dimensions:dimensions hAlignment:alignment vAlignment:CCVerticalTextAlignmentTop fontName:name fontSize:size];
+}
+@end
 
 #if __CC_PLATFORM_IOS
 @implementation EAGLView

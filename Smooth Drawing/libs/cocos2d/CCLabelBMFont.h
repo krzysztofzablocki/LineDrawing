@@ -79,24 +79,27 @@ typedef struct _BMFontPadding {
  */
 @interface CCBMFontConfiguration : NSObject
 {
+	// atlas name
+	NSString		*atlasName_;
+
     // XXX: Creating a public interface so that the bitmapFontArray[] is accesible
 @public
 
 	// BMFont definitions
 	struct _FontDefHashElement	*fontDefDictionary_;
 
-	// FNTConfig: Common Height
-	NSUInteger		commonHeight_;
+	// FNTConfig: Common Height. Should be signed (issue #1343)
+	NSInteger		commonHeight_;
 
 	// Padding
 	ccBMFontPadding	padding_;
 
-	// atlas name
-	NSString		*atlasName_;
-
 	// values for kerning
 	struct _KerningHashElement	*kerningDictionary_;
 }
+
+// atlasName
+@property (nonatomic, readwrite, retain) NSString *atlasName;
 
 /** allocates a CCBMFontConfiguration with a FNT file */
 +(id) configurationWithFNTFile:(NSString*)FNTfile;

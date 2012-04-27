@@ -58,93 +58,6 @@ typedef struct _LineVertex {
 
 @end
 
-@interface CCRenderTextureWithDepth : CCRenderTexture
-- (id)initWithWidth:(int)w height:(int)h andDepthFormat:(GLint)depthFormat;
-@end
-
-@implementation CCRenderTextureWithDepth {
-  GLuint depthRenderBufffer_;
-}
-- (id)initWithWidth:(int)w height:(int)h andDepthFormat:(GLint)depthFormat
-{
-  if ((self = [super init])) {
-    CCTexture2DPixelFormat format = kCCTexture2DPixelFormat_RGBA8888;
-
-    CCDirector *director = [CCDirector sharedDirector];
-
-    // XXX multithread
-    if ([director runningThread] != [NSThread currentThread])
-    CCLOG(@"cocos2d: WARNING. CCRenderTexture is running on its own thread. Make sure that an OpenGL context is being used on this thread!");
-
-
-    w *= CC_CONTENT_SCALE_FACTOR();
-    h *= CC_CONTENT_SCALE_FACTOR();
-
-    glGetIntegerv(GL_FRAMEBUFFER_BINDING, &oldFBO_);
-
-    // textures must be power of two
-    NSUInteger powW;
-    NSUInteger powH;
-
-    if ([[CCConfiguration sharedConfiguration] supportsNPOT]) {
-      powW = w;
-      powH = h;
-    } else {
-      powW = ccNextPOT(w);
-      powH = ccNextPOT(h);
-    }
-
-    void *data = malloc((int)(powW * powH * 4));
-    memset(data, 0, (int)(powW * powH * 4));
-    pixelFormat_ = format;
-
-    texture_ = [[CCTexture2D alloc] initWithData:data pixelFormat:pixelFormat_ pixelsWide:powW pixelsHigh:powH contentSize:CGSizeMake(w, h)];
-    free(data);
-
-    //! we need to remember old render buffer to restore it later/ bug in cocos2d ?
-    GLint oldRBO;
-    glGetIntegerv(GL_RENDERBUFFER_BINDING, &oldRBO);
-
-    // generate FBO
-    glGenFramebuffers(1, &fbo_);
-    glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
-
-    // associate texture with FBO
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture_.name, 0);
-
-    //create and attach depth buffer
-    glGenRenderbuffers(1, &depthRenderBufffer_);
-    glBindRenderbuffer(GL_RENDERBUFFER, depthRenderBufffer_);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, powW, powH);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthRenderBufffer_);
-
-    // check if it worked (probably worth doing :) )
-    NSAssert( glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE, @"Could not attach texture to framebuffer");
-
-    [texture_ setAliasTexParameters];
-
-    sprite_ = [CCSprite spriteWithTexture:texture_];
-
-    [sprite_ setScaleY:-1];
-    [self addChild:sprite_];
-
-    // issue #937
-    [sprite_ setBlendFunc:(ccBlendFunc){GL_ONE, GL_ONE_MINUS_SRC_ALPHA}];
-
-    //! restore rbo
-    glBindRenderbuffer(GL_RENDERBUFFER, oldRBO);
-    glBindFramebuffer(GL_FRAMEBUFFER, oldFBO_);
-  }
-  return self;
-}
-
-- (void)dealloc
-{
-  glDeleteRenderbuffers(1, &depthRenderBufffer_);
-}
-@end
-
-
 @implementation LineDrawer {
   NSMutableArray *points;
   NSMutableArray *velocities;
@@ -171,7 +84,7 @@ typedef struct _LineVertex {
     shaderProgram_ = [[CCShaderCache sharedShaderCache] programForKey:kCCShader_PositionColor];
     overdraw = 3.0f;
 
-    renderTexture = [[CCRenderTextureWithDepth alloc] initWithWidth:(int)self.contentSize.width height:(int)self.contentSize.height andDepthFormat:GL_DEPTH_COMPONENT24_OES];
+    renderTexture = [[CCRenderTexture alloc] initWithWidth:(int)self.contentSize.width height:(int)self.contentSize.height pixelFormat:kCCTexture2DPixelFormat_RGBA8888 depthStencilFormat:GL_DEPTH_COMPONENT16];
     renderTexture.anchorPoint = ccp(0, 0);
     renderTexture.position = ccp(1024 * 0.5f, 768 * 0.5f);
     [renderTexture clear:1.0f g:1.0f b:1.0f a:0];

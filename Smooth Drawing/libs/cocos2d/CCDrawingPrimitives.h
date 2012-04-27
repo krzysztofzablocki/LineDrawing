@@ -41,6 +41,9 @@
 extern "C" {
 #endif
 
+@class CCPointArray;
+
+	
 /**
  @file
  Drawing OpenGL ES primitives.
@@ -69,27 +72,49 @@ void ccDrawPoints( const CGPoint *points, NSUInteger numberOfPoints );
 /** draws a line given the origin and destination point measured in points. */
 void ccDrawLine( CGPoint origin, CGPoint destination );
 
+/** draws a rectangle given the origin and destination point measured in points. */
+void ccDrawRect( CGPoint origin, CGPoint destination );
+
+/** draws a solid rectangle given the origin and destination point measured in points.
+    @since 1.1
+ */
+void ccDrawSolidRect( CGPoint origin, CGPoint destination, ccColor4F color );
+
 /** draws a poligon given a pointer to CGPoint coordiantes and the number of vertices measured in points.
  The polygon can be closed or open
  */
 void ccDrawPoly( const CGPoint *vertices, NSUInteger numOfVertices, BOOL closePolygon );
 
-/** draws a filled polygon given a pointer to CGPoint coordiantes, the number of vertices measured in points, and a color.
+/** draws a solid polygon given a pointer to CGPoint coordiantes, the number of vertices measured in points, and a color.
  */
-void ccDrawFilledPoly( const CGPoint *poli, NSUInteger numberOfPoints, ccColor4F color );
+void ccDrawSolidPoly( const CGPoint *poli, NSUInteger numberOfPoints, ccColor4F color );
     
 /** draws a circle given the center, radius and number of segments measured in points */
 void ccDrawCircle( CGPoint center, float radius, float angle, NSUInteger segments, BOOL drawLineToCenter);
 
 /** draws a quad bezier path measured in points.
+ @warning This function could be pretty slow. Use it only for debugging purposes.
  @since v0.8
  */
 void ccDrawQuadBezier(CGPoint origin, CGPoint control, CGPoint destination, NSUInteger segments);
 
 /** draws a cubic bezier path measured in points.
+ @warning This function could be pretty slow. Use it only for debugging purposes.
  @since v0.8
  */
 void ccDrawCubicBezier(CGPoint origin, CGPoint control1, CGPoint control2, CGPoint destination, NSUInteger segments);
+
+/** draws a Catmull Rom path.
+ @warning This function could be pretty slow. Use it only for debugging purposes.
+ @since v2.0
+ */
+void ccDrawCatmullRom( CCPointArray *arrayOfControlPoints, NSUInteger segments );
+
+/** draws a Cardinal Spline path.
+ @warning This function could be pretty slow. Use it only for debugging purposes.
+ @since v2.0
+ */
+void ccDrawCardinalSpline( CCPointArray *config, CGFloat tension,  NSUInteger segments );
 
 /** set the drawing color with 4 unsigned bytes
  @since v2.0

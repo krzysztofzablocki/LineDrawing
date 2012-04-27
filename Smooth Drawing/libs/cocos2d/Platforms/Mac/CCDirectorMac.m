@@ -118,6 +118,20 @@
 //
 - (void) setFullScreen:(BOOL)fullscreen
 {
+//	isFullScreen_ = !isFullScreen_;
+//		
+//	if (isFullScreen_)
+//	{
+//		[self.view enterFullScreenMode:[[self.view window] screen] withOptions:nil];
+//	}
+//	else
+//	{
+//		[self.view exitFullScreenModeWithOptions:nil];
+//		[[self.view window] makeFirstResponder: self.view];
+//	}
+//	
+//	return;
+
 	// Mac OS X 10.6 and later offer a simplified mechanism to create full-screen contexts
 #if MAC_OS_X_VERSION_MIN_REQUIRED > MAC_OS_X_VERSION_10_5
 
@@ -407,6 +421,9 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTime
 
 - (void) startAnimation
 {
+    if(isAnimating_)
+        return;
+
 	CCLOG(@"cocos2d: startAnimation");
 #if (CC_DIRECTOR_MAC_THREAD == CC_MAC_USE_OWN_THREAD)
 	runningThread_ = [[NSThread alloc] initWithTarget:self selector:@selector(mainLoop) object:nil];
@@ -431,10 +448,15 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTime
 
 	// Activate the display link
 	CVDisplayLinkStart(displayLink);
+    
+    isAnimating_ = YES;
 }
 
 - (void) stopAnimation
 {
+    if(!isAnimating_)
+        return;
+
 	CCLOG(@"cocos2d: stopAnimation");
 
 	if( displayLink ) {
@@ -450,6 +472,8 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTime
         runningThread_ = nil;
 #endif
 	}
+    
+    isAnimating_ = NO;
 }
 
 -(void) dealloc

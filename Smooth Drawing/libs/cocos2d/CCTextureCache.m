@@ -113,7 +113,7 @@ static CCTextureCache *sharedTextureCache;
 {
 	__block NSString *desc = nil;
 	dispatch_sync(_dictQueue, ^{
-		desc = [NSString stringWithFormat:@"<%@ = %08X | num of textures =  %i | keys: %@>",
+		desc = [NSString stringWithFormat:@"<%@ = %p | num of textures =  %i | keys: %@>",
 			[self class],
 			self,
 			[textures_ count],
@@ -152,7 +152,7 @@ static CCTextureCache *sharedTextureCache;
 	__block CCTexture2D * tex;
 
 #ifdef __CC_PLATFORM_IOS
-	path = [CCFileUtils removeSuffixFromFile:path];
+	path = [[CCFileUtils sharedFileUtils] removeSuffixFromFile:path];
 #endif
 
 	dispatch_sync(_dictQueue, ^{
@@ -213,7 +213,7 @@ static CCTextureCache *sharedTextureCache;
 	__block CCTexture2D * tex;
 
 #ifdef __CC_PLATFORM_IOS
-	path = [CCFileUtils removeSuffixFromFile:path];
+	path = [[CCFileUtils sharedFileUtils] removeSuffixFromFile:path];
 #endif
 
 	dispatch_sync(_dictQueue, ^{
@@ -275,7 +275,7 @@ static CCTextureCache *sharedTextureCache;
 
 	// remove possible -HD suffix to prevent caching the same image twice (issue #1040)
 #ifdef __CC_PLATFORM_IOS
-	path = [CCFileUtils removeSuffixFromFile: path];
+	path = [[CCFileUtils sharedFileUtils] removeSuffixFromFile: path];
 #endif
 
 	dispatch_sync(_dictQueue, ^{
@@ -296,7 +296,7 @@ static CCTextureCache *sharedTextureCache;
 		else {
 
 			ccResolutionType resolution;
-			NSString *fullpath = [CCFileUtils fullPathFromRelativePath:path resolutionType:&resolution];
+			NSString *fullpath = [[CCFileUtils sharedFileUtils] fullPathFromRelativePath:path resolutionType:&resolution];
 
 			UIImage *image = [[UIImage alloc] initWithContentsOfFile:fullpath];
 			tex = [[CCTexture2D alloc] initWithCGImage:image.CGImage resolutionType:resolution];
@@ -317,7 +317,7 @@ static CCTextureCache *sharedTextureCache;
 
 #elif defined(__CC_PLATFORM_MAC)
 		else {
-			NSString *fullpath = [CCFileUtils fullPathFromRelativePath: path ];
+			NSString *fullpath = [[CCFileUtils sharedFileUtils] fullPathFromRelativePath: path ];
 
 			NSData *data = [[NSData alloc] initWithContentsOfFile:fullpath];
 			NSBitmapImageRep *image = [[NSBitmapImageRep alloc] initWithData:data];
@@ -448,7 +448,7 @@ static CCTextureCache *sharedTextureCache;
 
 	// remove possible -HD suffix to prevent caching the same image twice (issue #1040)
 #ifdef __CC_PLATFORM_IOS
-	path = [CCFileUtils removeSuffixFromFile: path];
+	path = [[CCFileUtils sharedFileUtils] removeSuffixFromFile: path];
 #endif
 
 	dispatch_sync(_dictQueue, ^{

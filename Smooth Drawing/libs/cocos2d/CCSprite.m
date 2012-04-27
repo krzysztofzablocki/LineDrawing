@@ -239,7 +239,7 @@
 
 - (NSString*) description
 {
-	return [NSString stringWithFormat:@"<%@ = %08X | Rect = (%.2f,%.2f,%.2f,%.2f) | tag = %i | atlasIndex = %i>", [self class], self,
+	return [NSString stringWithFormat:@"<%@ = %p | Rect = (%.2f,%.2f,%.2f,%.2f) | tag = %i | atlasIndex = %i>", [self class], self,
 			rect_.origin.x, rect_.origin.y, rect_.size.width, rect_.size.height,
 			tag_,
 			atlasIndex_
@@ -746,10 +746,10 @@
 	SET_DIRTY_RECURSIVELY();
 }
 
--(void)setIsRelativeAnchorPoint:(BOOL)relative
+-(void) setIgnoreAnchorPointForPosition:(BOOL)value
 {
-	NSAssert( ! batchNode_, @"relativeTransformAnchor is invalid in CCSprite");
-	[super setIsRelativeAnchorPoint:relative];
+	NSAssert( ! batchNode_, @"ignoreAnchorPointForPosition is invalid in CCSprite");
+	[super setIgnoreAnchorPointForPosition:value];
 }
 
 -(void)setVisible:(BOOL)v
@@ -930,12 +930,13 @@
 
 -(void) setTexture:(CCTexture2D*)texture
 {
-	NSAssert( ! batchNode_, @"CCSprite: setTexture doesn't work when the sprite is rendered using a CCSpriteBatchNode");
+	// If batchnode, then texture id should be the same
+	NSAssert( !batchNode_ || texture.name == batchNode_.texture.name , @"CCSprite: Batched sprites should use the same texture as the batchnode");	
 
 	// accept texture==nil as argument
 	NSAssert( !texture || [texture isKindOfClass:[CCTexture2D class]], @"setTexture expects a CCTexture2D. Invalid argument");
 
-	if( texture_ != texture ) {
+	if( ! batchNode_ && texture_ != texture ) {
 		[texture_ release];
 		texture_ = [texture retain];
 

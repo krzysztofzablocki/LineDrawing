@@ -51,7 +51,7 @@
 
 - (NSString*) description
 {
-	return [NSString stringWithFormat:@"<%@ = %08X>", [self class], self];
+	return [NSString stringWithFormat:@"<%@ = %p>", [self class], self];
 }
 
 - (void) dealloc
@@ -126,6 +126,26 @@
 		element->paused = NO;
 //	else
 //		CCLOG(@"cocos2d: resumeAllActions: Target not found");
+}
+
+-(NSSet *) pauseAllRunningActions
+{
+    NSMutableSet* idsWithActions = [NSMutableSet setWithCapacity:50];
+    
+    for(tHashElement *element=targets; element != NULL; element=element->hh.next) {
+        if( !element->paused ) {
+            element->paused = YES;
+            [idsWithActions addObject:element->target];
+        }
+    }
+    return idsWithActions;
+}
+
+-(void) resumeTargets:(NSSet *)targetsToResume
+{
+    for(id target in targetsToResume) {
+        [self resumeTarget:target];
+    }
 }
 
 #pragma mark ActionManager - run

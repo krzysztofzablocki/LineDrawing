@@ -120,6 +120,7 @@ typedef enum {
 	GLfloat						maxS_,
 								maxT_;
 	BOOL						hasPremultipliedAlpha_;
+	BOOL						hasMipmaps_;
 
 #ifdef __CC_PLATFORM_IOS
 	ccResolutionType			resolutionType_;
@@ -212,9 +213,9 @@ Note that the generated textures are of type A8 - use the blending mode (GL_SRC_
 	- Mac: Only NSLineBreakByWordWrapping is supported.
  @since v1.0
  */
-- (id) initWithString:(NSString*)string dimensions:(CGSize)dimensions alignment:(CCTextAlignment)alignment lineBreakMode:(CCLineBreakMode)lineBreakMode fontName:(NSString*)name fontSize:(CGFloat)size;
+- (id) initWithString:(NSString*)string dimensions:(CGSize)dimensions hAlignment:(CCTextAlignment)alignment vAlignment:(CCVerticalTextAlignment) vertAlignment lineBreakMode:(CCLineBreakMode)lineBreakMode fontName:(NSString*)name fontSize:(CGFloat)size;
 /** Initializes a texture from a string with dimensions, alignment, font name and font size */
-- (id) initWithString:(NSString*)string dimensions:(CGSize)dimensions alignment:(CCTextAlignment)alignment fontName:(NSString*)name fontSize:(CGFloat)size;
+- (id) initWithString:(NSString*)string dimensions:(CGSize)dimensions hAlignment:(CCTextAlignment)alignment vAlignment:(CCVerticalTextAlignment) vertAlignment fontName:(NSString*)name fontSize:(CGFloat)size;
 /** Initializes a texture from a string with font name and font size */
 - (id) initWithString:(NSString*)string fontName:(NSString*)name fontSize:(CGFloat)size;
 @end
@@ -271,6 +272,9 @@ typedef struct _ccTexParams {
 @interface CCTexture2D (GLFilter)
 /** sets the min filter, mag filter, wrap s and wrap t texture parameters.
  If the texture size is NPOT (non power of 2), then in can only use GL_CLAMP_TO_EDGE in GL_TEXTURE_WRAP_{S,T}.
+ 
+ @warning Calling this method could allocate additional texture memory.
+
  @since v0.8
  */
 -(void) setTexParameters: (ccTexParams*) texParams;
@@ -278,6 +282,8 @@ typedef struct _ccTexParams {
 /** sets antialias texture parameters:
   - GL_TEXTURE_MIN_FILTER = GL_LINEAR
   - GL_TEXTURE_MAG_FILTER = GL_LINEAR
+ 
+ @warning Calling this method could allocate additional texture memory.
 
  @since v0.8
  */
@@ -286,6 +292,8 @@ typedef struct _ccTexParams {
 /** sets alias texture parameters:
   - GL_TEXTURE_MIN_FILTER = GL_NEAREST
   - GL_TEXTURE_MAG_FILTER = GL_NEAREST
+
+ @warning Calling this method could allocate additional texture memory.
 
  @since v0.8
  */
@@ -313,9 +321,9 @@ typedef struct _ccTexParams {
 
  How does it work ?
    - If the image is an RGBA (with Alpha) then the default pixel format will be used (it can be a 8-bit, 16-bit or 32-bit texture)
-   - If the image is an RGB (without Alpha) then RGB888 (24-bit) or RGB565 texture will be used (16-bit texture) depending on the bpp of the orignal image
+   - If the image is an RGB (without Alpha) then: If the default pixel format is RGBA8888 then a RGBA8888 (32-bit) will be used. Otherwise a RGB565 (16-bit texture) will be used.
 
- This parameter is not valid for PVR images.
+ This parameter is not valid for PVR / PVR.CCZ images.
 
  @since v0.8
  */

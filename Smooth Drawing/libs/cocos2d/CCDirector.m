@@ -53,6 +53,7 @@
 #import "Support/OpenGL_Internal.h"
 #import "Support/CGPointExtension.h"
 #import "Support/CCProfiling.h"
+#import "Support/CCFileUtils.h"
 
 #ifdef __CC_PLATFORM_IOS
 #import "Platforms/iOS/CCDirectorIOS.h"
@@ -90,6 +91,7 @@ extern NSString * cocos2dVersion(void);
 @synthesize displayStats = displayStats_;
 @synthesize nextDeltaTimeZero = nextDeltaTimeZero_;
 @synthesize isPaused = isPaused_;
+@synthesize isAnimating = isAnimating_;
 @synthesize sendCleanupToScene = sendCleanupToScene_;
 @synthesize runningThread = runningThread_;
 @synthesize notificationNode = notificationNode_;
@@ -164,7 +166,7 @@ static CCDirector *_sharedDirector = nil;
 
 		// action manager
 		actionManager_ = [[CCActionManager alloc] init];
-		[scheduler_ scheduleUpdateForTarget:actionManager_ priority:kCCActionManagerPriority paused:NO];
+		[scheduler_ scheduleUpdateForTarget:actionManager_ priority:kCCPrioritySystem paused:NO];
 
 		winSizeInPixels_ = winSizeInPoints_ = CGSizeZero;
 	}
@@ -174,7 +176,7 @@ static CCDirector *_sharedDirector = nil;
 
 - (NSString*) description
 {
-	return [NSString stringWithFormat:@"<%@ = %08X | Size: %0.f x %0.f, view = %@>", [self class], self, winSizeInPoints_.width, winSizeInPoints_.height, view_];
+	return [NSString stringWithFormat:@"<%@ = %p | Size: %0.f x %0.f, view = %@>", [self class], self, winSizeInPoints_.width, winSizeInPoints_.height, view_];
 }
 
 - (void) dealloc
@@ -202,7 +204,7 @@ static CCDirector *_sharedDirector = nil;
 	NSAssert( view_, @"view_ must be initialized");
 
 	[self setAlphaBlending: YES];
-	[self setDepthTest: YES];
+	[self setDepthTest: view_.depthFormat];
 	[self setProjection: projection_];
 
 	// set other opengl default values
@@ -251,6 +253,7 @@ static CCDirector *_sharedDirector = nil;
 {
 	[CCLabelBMFont purgeCachedData];
 	[[CCTextureCache sharedTextureCache] removeUnusedTextures];
+	[[CCFileUtils sharedFileUtils] purgeCachedEntries];
 }
 
 #pragma mark Director - Scene OpenGL Helper
@@ -262,7 +265,7 @@ static CCDirector *_sharedDirector = nil;
 
 -(float) getZEye
 {
-	return ( winSizeInPixels_.height / 1.1566f );
+	return ( winSizeInPixels_.height / 1.1566f / CC_CONTENT_SCALE_FACTOR() );
 }
 
 -(void) setProjection:(ccDirectorProjection)projection
@@ -438,6 +441,7 @@ static CCDirector *_sharedDirector = nil;
 	[CCSpriteFrameCache purgeSharedSpriteFrameCache];
 	[CCTextureCache purgeSharedTextureCache];
 	[CCShaderCache purgeSharedShaderCache];
+	[[CCFileUtils sharedFileUtils] purgeCachedEntries];
 
 	// OpenGL view
 
@@ -587,6 +591,8 @@ static CCDirector *_sharedDirector = nil;
 		[[CCTextureCache sharedTextureCache ] removeTexture:texture];
 		FPSLabel_ = nil;
 		SPFLabel_ = nil;
+		
+		[[CCFileUtils sharedFileUtils] purgeCachedEntries];
 	}
 
 	CCTexture2DPixelFormat currentFormat = [CCTexture2D defaultAlphaPixelFormat];

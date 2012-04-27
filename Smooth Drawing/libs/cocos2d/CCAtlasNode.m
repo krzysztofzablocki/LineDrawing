@@ -63,7 +63,7 @@
 -(id) initWithTileFile:(NSString*)tile tileWidth:(NSUInteger)w tileHeight:(NSUInteger)h itemsToRender: (NSUInteger) c
 {
 	if( (self=[super init]) ) {
-
+		
 		itemWidth_ = w;
 		itemHeight_ = h;
 
@@ -76,8 +76,8 @@
 
 		CCTextureAtlas * newAtlas = [[CCTextureAtlas alloc] initWithFile:tile capacity:c];
 		self.textureAtlas = newAtlas;
-		[newAtlas release];
-
+		[newAtlas release];		
+		
 		if( ! textureAtlas_ ) {
 			CCLOG(@"cocos2d: Could not initialize CCAtlasNode. Invalid Texture");
 			[self release];

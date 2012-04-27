@@ -26,6 +26,7 @@
 
 #if CC_ENABLE_DEPRECATED
 
+#import "ccTypes.h"
 #import "ccMacros.h"
 #import "CCMenu.h"
 #import "CCDirector.h"
@@ -36,6 +37,9 @@
 #import "CCActionManager.h"
 #import "CCActionInterval.h"
 #import "CCRenderTexture.h"
+#import "CCSpriteFrameCache.h"
+#import "CCLabelTTF.h"
+#import "CCTexture2D.h"
 #import "Support/CCFileUtils.h"
 #import "Platforms/Mac/CCDirectorMac.h"
 #import "Platforms/iOS/CCTouchDispatcher.h"
@@ -52,8 +56,10 @@
 
 // ccTypes.h
 enum {
+#ifdef __CC_PLATFORM_IOS
 	kCCResolutionStandard DEPRECATED_ATTRIBUTE	= kCCResolutioniPhone,
 	kCCResolutionRetinaDisplay DEPRECATED_ATTRIBUTE = kCCResolutioniPhoneRetinaDisplay,
+#endif // __CC_PLATFORM_IOS
 	kCCMenuTouchPriority DEPRECATED_ATTRIBUTE	= kCCMenuHandlerPriority,
 };
 
@@ -62,6 +68,27 @@ enum {
 	kCCImageFormatJPG DEPRECATED_ATTRIBUTE = kCCImageFormatJPEG,
 	kCCImageFormatRawData UNAVAILABLE_ATTRIBUTE,
 };
+
+enum {
+	CCTextAlignmentLeft DEPRECATED_ATTRIBUTE = kCCTextAlignmentLeft,
+	CCTextAlignmentCenter DEPRECATED_ATTRIBUTE = kCCTextAlignmentCenter,
+	CCTextAlignmentRight DEPRECATED_ATTRIBUTE = kCCTextAlignmentRight,
+
+	CCVerticalTextAlignmentTop DEPRECATED_ATTRIBUTE = kCCVerticalTextAlignmentTop,
+	CCVerticalTextAlignmentMiddle DEPRECATED_ATTRIBUTE = kCCVerticalTextAlignmentCenter,
+	CCVerticalTextAlignmentBottom DEPRECATED_ATTRIBUTE = kCCVerticalTextAlignmentBottom,
+
+	CCLineBreakModeWordWrap DEPRECATED_ATTRIBUTE = kCCLineBreakModeWordWrap,
+	CCLineBreakModeCharacterWrap DEPRECATED_ATTRIBUTE = kCCLineBreakModeCharacterWrap,
+	CCLineBreakModeClip	DEPRECATED_ATTRIBUTE = kCCLineBreakModeClip,
+	CCLineBreakModeHeadTruncation DEPRECATED_ATTRIBUTE = kCCLineBreakModeHeadTruncation,
+	CCLineBreakModeTailTruncation DEPRECATED_ATTRIBUTE = kCCLineBreakModeTailTruncation,
+	CCLineBreakModeMiddleTruncation DEPRECATED_ATTRIBUTE = kCCLineBreakModeMiddleTruncation,
+};
+
+//DEPRECATED_ATTRIBUTE typedef  ccTextAlignment CCTextAlignment;
+//
+//DEPRECATED_ATTRIBUTE typedef  ccVerticalTextAlignment CCVerticalTextAlignment;
 
 // Free functions
 void ccGLUniformModelViewProjectionMatrix(CCGLProgram* program) DEPRECATED_ATTRIBUTE;
@@ -108,6 +135,10 @@ DEPRECATED_ATTRIBUTE @interface MacView : CCGLView
 -(void) setDisplayFPS:(BOOL)display DEPRECATED_ATTRIBUTE;
 @end
 
+@interface CCNode (Deprecated)
+-(void) setIsRelativeAnchorPoint:(BOOL)value DEPRECATED_ATTRIBUTE;
+-(BOOL) isRelativeAnchorPoint DEPRECATED_ATTRIBUTE;
+@end
 
 @interface CCSprite (Deprecated)
 // new: spriteWithTexture:rect:
@@ -207,13 +238,49 @@ DEPRECATED_ATTRIBUTE @interface MacView : CCGLView
 #endif
 @end
 
-#if __CC_PLATFORM_IOS
 @interface CCFileUtils (Deprecated)
-// new: setiPhoneRetinaDisplaySuffix
-+(void) setRetinaDisplaySuffix:(NSString*)suffix DEPRECATED_ATTRIBUTE;
-@end
-#endif
 
+// new: -(NSString*) fullPathFromRelativePath:  (instance method, not class method)
++(NSString*) fullPathFromRelativePath:(NSString*) relPath DEPRECATED_ATTRIBUTE;
+// new: -(NSString*) fullPathFromRelativePath:resolutionType  (instance method, not class method)
++(NSString*) fullPathFromRelativePath:(NSString*)relPath resolutionType:(ccResolutionType*)resolutionType DEPRECATED_ATTRIBUTE;
+
+#ifdef __CC_PLATFORM_IOS
+// new: -(NSString*) removeSuffixFromFile:  (instance method, not class method)
++(NSString *)removeSuffixFromFile:(NSString*) path DEPRECATED_ATTRIBUTE;
+// new: -(BOOL) iPhoneRetinaDisplayFileExistsAtPath: (instance method, not class method)
++(BOOL) iPhoneRetinaDisplayFileExistsAtPath:(NSString*)filename DEPRECATED_ATTRIBUTE;
+// new: -(BOOL) iPadFileExistsAtPath: (instance method, not class method)
++(BOOL) iPadFileExistsAtPath:(NSString*)filename DEPRECATED_ATTRIBUTE;
+// new: -(BOOL) iPadRetinaDisplayFileExistsAtPath: (instance method, not class method)
++(BOOL) iPadRetinaDisplayFileExistsAtPath:(NSString*)filename DEPRECATED_ATTRIBUTE;
+// new: -(void) setiPhoneRetinaDisplaySuffix: (instance method, not class method)
++(void) setRetinaDisplaySuffix:(NSString*)suffix DEPRECATED_ATTRIBUTE;
+#endif  //__CC_PLATFORM_IOS
+@end
+
+
+@interface CCSpriteFrameCache (Deprecated)
+-(void) addSpriteFramesWithDictionary:(NSDictionary*)dictionary textureFile:(NSString*)filename DEPRECATED_ATTRIBUTE;
+-(void) addSpriteFramesWithFile:(NSString*)plist textureFile:(NSString*)filename DEPRECATED_ATTRIBUTE;
+@end
+
+
+@interface CCLabelTTF (Deprecated)
+// new: + (id) labelWithString:(NSString*)string dimensions:hAlignment:fontName:fontSize:
++ (id) labelWithString:(NSString*)string dimensions:(CGSize)dimensions alignment:(CCTextAlignment)alignment fontName:(NSString*)name fontSize:(CGFloat)size DEPRECATED_ATTRIBUTE;
+// new: + (id) labelWithString:(NSString*)string dimensions:hAlignment:lineBreakMode:fontName:fontSize:
++ (id) labelWithString:(NSString*)string dimensions:(CGSize)dimensions alignment:(CCTextAlignment)alignment lineBreakMode:(CCLineBreakMode)lineBreakMode fontName:(NSString*)name fontSize:(CGFloat)size DEPRECATED_ATTRIBUTE;
+// new: + (id) initWithString:(NSString*)string dimensions:hAlignment:fontName:fontSize:
+- (id) initWithString:(NSString*)string dimensions:(CGSize)dimensions alignment:(CCTextAlignment)alignment fontName:(NSString*)name fontSize:(CGFloat)size DEPRECATED_ATTRIBUTE;
+// new: + (id) initWithString:(NSString*)string dimensions:hAlignment:lineBreakMode:fontName:fontSize:
+- (id) initWithString:(NSString*)str dimensions:(CGSize)dimensions alignment:(CCTextAlignment)alignment lineBreakMode:(CCLineBreakMode)lineBreakMode fontName:(NSString*)name fontSize:(CGFloat)size DEPRECATED_ATTRIBUTE;
+@end
+
+@interface CCTexture2D (Deprecated)
+- (id) initWithString:(NSString*)string dimensions:(CGSize)dimensions alignment:(CCTextAlignment)alignment lineBreakMode:(CCLineBreakMode)lineBreakMode fontName:(NSString*)name fontSize:(CGFloat)size DEPRECATED_ATTRIBUTE;
+- (id) initWithString:(NSString*)string dimensions:(CGSize)dimensions alignment:(CCTextAlignment)alignment fontName:(NSString*)name fontSize:(CGFloat)size DEPRECATED_ATTRIBUTE;
+@end
 
 #endif // CC_ENABLE_DEPRECATED
 

@@ -316,6 +316,7 @@ typedef enum
 {
 	//! Unknonw resolution type
 	kCCResolutionUnknown,
+#ifdef __CC_PLATFORM_IOS
 	//! iPhone resolution type
 	kCCResolutioniPhone,
 	//! RetinaDisplay resolution type
@@ -324,8 +325,45 @@ typedef enum
 	kCCResolutioniPad,
 	//! iPad Retina Display resolution type
 	kCCResolutioniPadRetinaDisplay,
+	
+#elif defined(__CC_PLATFORM_MAC)
+	//! Mac resolution type
+	kCCResolutionMac,
+
+	//! Mac RetinaDisplay resolution type (???)
+	kCCResolutionMacRetinaDisplay,
+#endif // platform
 
 } ccResolutionType;
+
+// XXX: If any of these enums are edited and/or reordered, udpate CCTexture2D.m
+//! Vertical text alignment type
+typedef enum
+{
+    kCCVerticalTextAlignmentTop,
+    kCCVerticalTextAlignmentCenter,
+    kCCVerticalTextAlignmentBottom,
+} CCVerticalTextAlignment;
+
+// XXX: If any of these enums are edited and/or reordered, udpate CCTexture2D.m
+//! Horizontal text alignment type
+typedef enum
+{
+	kCCTextAlignmentLeft,
+	kCCTextAlignmentCenter,
+	kCCTextAlignmentRight,
+} CCTextAlignment;
+
+// XXX: If any of these enums are edited and/or reordered, udpate CCTexture2D.m
+//! Line break modes
+typedef enum {
+	kCCLineBreakModeWordWrap,
+	kCCLineBreakModeCharacterWrap,
+	kCCLineBreakModeClip,
+	kCCLineBreakModeHeadTruncation,
+	kCCLineBreakModeTailTruncation,
+	kCCLineBreakModeMiddleTruncation
+} CCLineBreakMode;
 
 //! delta time type
 //! if you want more resolution redefine it as a double

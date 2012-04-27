@@ -49,6 +49,7 @@ Copyright (C) 2008 Apple Inc. All Rights Reserved.
  * Extended PVR formats for cocos2d project ( http://www.cocos2d-iphone.org )
  *	- RGBA8888
  *	- BGRA8888
+ *  - RGB888
  *  - RGBA4444
  *  - RGBA5551
  *  - RGB565
@@ -164,6 +165,7 @@ typedef struct _PVRTexHeader
 @synthesize width = width_;
 @synthesize height = height_;
 @synthesize hasAlpha = hasAlpha_;
+@synthesize numberOfMipmaps = numberOfMipmaps_;
 
 // cocos2d integration
 @synthesize retainName = retainName_;
@@ -190,6 +192,7 @@ typedef struct _PVRTexHeader
 		(uint32_t)gPVRTexIdentifier[2] != ((pvrTag >> 16) & 0xff) ||
 		(uint32_t)gPVRTexIdentifier[3] != ((pvrTag >> 24) & 0xff))
 	{
+		CCLOG(@"Unsupported PVR format. Use the Legacy format until the new format is supported");
 		return FALSE;
 	}
 
@@ -296,22 +299,33 @@ typedef struct _PVRTexHeader
 		if (name_ != 0)
 			ccGLDeleteTexture( name_ );
 
+		// From PVR sources: "PVR files are never row aligned."
 		glPixelStorei(GL_UNPACK_ALIGNMENT,1);
+
 		glGenTextures(1, &name_);
 		ccGLBindTexture2D( name_ );
 
+		// Default: Anti alias.
+		if( numberOfMipmaps_ == 1 )
+			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+		else
+			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+		
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
 	}
-
+	
 	CHECK_GL_ERROR(); // clean possible GL error
+
+	GLenum internalFormat = tableFormats[tableFormatIndex_][kCCInternalOpenGLInternalFormat];
+	GLenum format = tableFormats[tableFormatIndex_][kCCInternalOpenGLFormat];
+	GLenum type = tableFormats[tableFormatIndex_][kCCInternalOpenGLType];
+	BOOL compressed = tableFormats[tableFormatIndex_][kCCInternalCompressedImage];
 
 	// Generate textures with mipmaps
 	for (GLint i=0; i < numberOfMipmaps_; i++)
 	{
-		GLenum internalFormat = tableFormats[tableFormatIndex_][kCCInternalOpenGLInternalFormat];
-		GLenum format = tableFormats[tableFormatIndex_][kCCInternalOpenGLFormat];
-		GLenum type = tableFormats[tableFormatIndex_][kCCInternalOpenGLType];
-		BOOL compressed = tableFormats[tableFormatIndex_][kCCInternalCompressedImage];
-
 		if( compressed && ! [[CCConfiguration sharedConfiguration] supportsPVRTC] ) {
 			CCLOG(@"cocos2d: WARNING: PVRTC images are not supported");
 			return FALSE;
@@ -338,7 +352,7 @@ typedef struct _PVRTexHeader
 		width = MAX(width >> 1, 1);
 		height = MAX(height >> 1, 1);
 	}
-
+	
 	return TRUE;
 }
 
@@ -380,6 +394,44 @@ typedef struct _PVRTexHeader
 			[self release];
 			return nil;
 		}
+		
+#if defined(__CC_PLATFORM_IOS) && defined(DEBUG)
+
+		GLenum pixelFormat = tableFormats[tableFormatIndex_][kCCInternalCCTexture2DPixelFormat];
+		CCConfiguration *conf = [CCConfiguration sharedConfiguration];
+		
+		if( [conf OSVersion] >= kCCiOSVersion_5_0 )
+		{
+			
+			// iOS BUG:
+			// RGB888 textures allocate much more memory than needed on iOS 5
+			// http://www.cocos2d-iphone.org/forum/topic/31092
+			
+			if( pixelFormat == kCCTexture2DPixelFormat_RGB888 ) {
+				printf("\n");
+				NSLog(@"cocos2d: WARNING. Using RGB888 texture. Convert it to RGB565 or RGBA8888 in order to reduce memory");
+				NSLog(@"cocos2d: WARNING: File: %@", [path lastPathComponent] );
+				NSLog(@"cocos2d: WARNING: For furhter info visit: http://www.cocos2d-iphone.org/forum/topic/31092");
+				printf("\n");
+			}
+
+			// iOS BUG:
+			// If Texture is both 16-bit and NPOT on iOS5, then warn the user
+			// http://www.cocos2d-iphone.org/forum/topic/31092
+			
+			else if( (pixelFormat == kCCTexture2DPixelFormat_RGB565 || pixelFormat == kCCTexture2DPixelFormat_RGBA4444 || pixelFormat == kCCTexture2DPixelFormat_RGB5A1) &&
+			   ( (width_ != ccNextPOT(width_)) || height_ != ccNextPOT(height_) ) )
+			{
+				printf("\n");
+				NSLog(@"cocos2d: WARNING. Using 16-bit & NPOT (%d,%d) texture. Convert it to POT (%lu,%lu) in order to save memory", width_, height_, ccNextPOT(width_), ccNextPOT(height_) );
+				NSLog(@"cocos2d: WARNING: File: %@", [path lastPathComponent] );
+				NSLog(@"cocos2d: WARNING: For furhter info visit: http://www.cocos2d-iphone.org/forum/topic/31092");
+				printf("\n");
+			}
+		}
+#endif // iOS
+		
+
 
 		free(pvrdata);
 	}

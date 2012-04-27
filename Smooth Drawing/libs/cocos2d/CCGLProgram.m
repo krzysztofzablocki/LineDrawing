@@ -106,15 +106,15 @@ typedef void (*GLLogFunction) (GLuint program,
 - (id)initWithVertexShaderFilename:(NSString *)vShaderFilename fragmentShaderFilename:(NSString *)fShaderFilename
 {
 	
-	const GLchar * vertexSource = (GLchar*) [[NSString stringWithContentsOfFile:[CCFileUtils fullPathFromRelativePath:vShaderFilename] encoding:NSUTF8StringEncoding error:nil] UTF8String];
-	const GLchar * fragmentSource = (GLchar*) [[NSString stringWithContentsOfFile:[CCFileUtils fullPathFromRelativePath:fShaderFilename] encoding:NSUTF8StringEncoding error:nil] UTF8String];
+	const GLchar * vertexSource = (GLchar*) [[NSString stringWithContentsOfFile:[[CCFileUtils sharedFileUtils] fullPathFromRelativePath:vShaderFilename] encoding:NSUTF8StringEncoding error:nil] UTF8String];
+	const GLchar * fragmentSource = (GLchar*) [[NSString stringWithContentsOfFile:[[CCFileUtils sharedFileUtils] fullPathFromRelativePath:fShaderFilename] encoding:NSUTF8StringEncoding error:nil] UTF8String];
 
 	return [self initWithVertexShaderByteArray:vertexSource fragmentShaderByteArray:fragmentSource];
 }
 
 - (NSString*) description
 {
-	return [NSString stringWithFormat:@"<%@ = %08X | Program = %i, VertexShader = %i, FragmentShader = %i>", [self class], self, program_, vertShader_, fragShader_];
+	return [NSString stringWithFormat:@"<%@ = %p | Program = %i, VertexShader = %i, FragmentShader = %i>", [self class], self, program_, vertShader_, fragShader_];
 }
 
 
