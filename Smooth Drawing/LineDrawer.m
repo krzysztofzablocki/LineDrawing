@@ -154,7 +154,7 @@ typedef struct _LineVertex {
     CGPoint D = ccpSub(curPoint, ccpMult(perpendicular, curValue / 2));
 
     //! continuing line
-    if (connectingLine) {
+    if (connectingLine || index > 0) {
       A = prevC;
       B = prevD;
     } else if (index == 0) {
@@ -183,7 +183,7 @@ typedef struct _LineVertex {
     CGPoint I = ccpSub(D, ccpMult(perpendicular, overdraw));
 
     //! end vertices of last line are the start of this one, also for the overdraw
-    if (connectingLine) {
+    if (connectingLine || index > 6) {
       F = prevG;
       H = prevI;
     }
