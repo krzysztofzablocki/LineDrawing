@@ -84,7 +84,7 @@ typedef struct _LineVertex {
     shaderProgram_ = [[CCShaderCache sharedShaderCache] programForKey:kCCShader_PositionColor];
     overdraw = 3.0f;
 
-    renderTexture = [[CCRenderTexture alloc] initWithWidth:(int)self.contentSize.width height:(int)self.contentSize.height pixelFormat:kCCTexture2DPixelFormat_RGBA8888 depthStencilFormat:GL_DEPTH_COMPONENT16];
+    renderTexture = [[CCRenderTexture alloc] initWithWidth:(int)self.contentSize.width height:(int)self.contentSize.height pixelFormat:kCCTexture2DPixelFormat_RGBA8888];
     renderTexture.anchorPoint = ccp(0, 0);
     renderTexture.position = ccp(1024 * 0.5f, 768 * 0.5f);
     [renderTexture clear:1.0f g:1.0f b:1.0f a:0];
@@ -299,9 +299,8 @@ typedef struct _LineVertex {
   glVertexAttribPointer(kCCVertexAttrib_Color, 4, GL_FLOAT, GL_FALSE, sizeof(LineVertex), &vertices[0].color);
 
 
-  glDepthFunc(GL_LEQUAL);
-  glEnable(GL_DEPTH_TEST);
   glDrawArrays(GL_TRIANGLES, 0, (GLsizei)count);
+  glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
   for (unsigned int i = 0; i < [circlesPoints count] / 2; ++i) {
     LinePoint *prevPoint = [circlesPoints objectAtIndex:i * 2];
@@ -311,8 +310,6 @@ typedef struct _LineVertex {
     [self fillLineEndPointAt:curPoint.pos direction:dirVector radius:curPoint.width * 0.5f andColor:color];
   }
   [circlesPoints removeAllObjects];
-
-  glDisable(GL_DEPTH_TEST);
 }
 
 - (NSMutableArray *)calculateSmoothLinePoints
@@ -423,8 +420,6 @@ typedef struct _LineVertex {
 - (void)handleLongPress:(UILongPressGestureRecognizer *)longPressGestureRecognizer
 {
   [renderTexture beginWithClear:1.0 g:1.0 b:1.0 a:0];
-  glClearDepthf(100);
-  glClear(GL_DEPTH_BUFFER_BIT);
   [renderTexture end];
 }
 @end
