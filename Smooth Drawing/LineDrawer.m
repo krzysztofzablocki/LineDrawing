@@ -86,7 +86,17 @@ typedef struct _LineVertex {
 
     renderTexture = [[CCRenderTexture alloc] initWithWidth:(int)self.contentSize.width height:(int)self.contentSize.height pixelFormat:kCCTexture2DPixelFormat_RGBA8888];
     renderTexture.anchorPoint = ccp(0, 0);
-    renderTexture.position = ccp(1024 * 0.5f, 768 * 0.5f);
+    float width;
+      float height;
+      if (self.contentSize.height > self.contentSize.width) {
+          width = self.contentSize.height;
+          height = self.contentSize.width;
+      } else {
+          width = self.contentSize.width;
+          height = self.contentSize.height;
+      }
+    renderTexture.position = ccp(height * 0.5f, width * 0.5f);
+
     [renderTexture clear:1.0f g:1.0f b:1.0f a:0];
     [self addChild:renderTexture];
 
