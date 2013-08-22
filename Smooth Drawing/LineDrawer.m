@@ -81,7 +81,7 @@ typedef struct _LineVertex {
     velocities = [NSMutableArray array];
     circlesPoints = [NSMutableArray array];
 
-    shaderProgram_ = [[CCShaderCache sharedShaderCache] programForKey:kCCShader_PositionColor];
+    self.shaderProgram = [[CCShaderCache sharedShaderCache] programForKey:kCCShader_PositionColor];
     overdraw = 3.0f;
 
     renderTexture = [[CCRenderTexture alloc] initWithWidth:(int)self.contentSize.width height:(int)self.contentSize.height pixelFormat:kCCTexture2DPixelFormat_RGBA8888];
