@@ -270,8 +270,8 @@ typedef struct _LineVertex {
 
 - (void)fillLineTriangles:(LineVertex *)vertices count:(NSUInteger)count withColor:(ccColor4F)color
 {
-  [shaderProgram_ use];
-  [shaderProgram_ setUniformForModelViewProjectionMatrix];
+  [_shaderProgram use];
+  [_shaderProgram setUniformsForBuiltins];
 
   ccGLEnableVertexAttribs(kCCVertexAttribFlag_Position | kCCVertexAttribFlag_Color);
 
@@ -309,7 +309,6 @@ typedef struct _LineVertex {
   glVertexAttribPointer(kCCVertexAttrib_Color, 4, GL_FLOAT, GL_FALSE, sizeof(LineVertex), &vertices[0].color);
 
 
-  glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
   glDrawArrays(GL_TRIANGLES, 0, (GLsizei)count);
 
   for (unsigned int i = 0; i < [circlesPoints count] / 2; ++i) {
