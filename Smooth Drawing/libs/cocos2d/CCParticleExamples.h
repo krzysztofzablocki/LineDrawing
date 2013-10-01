@@ -28,82 +28,90 @@
 #import "ccMacros.h"
 #import "CCParticleSystemQuad.h"
 
-// build each architecture with the optimal particle system
-
-// ARMv7, Mac or Simulator use "Quad" particle
-#if defined(__ARM_NEON__) || defined(__CC_PLATFORM_MAC) || TARGET_IPHONE_SIMULATOR
-	#define ARCH_OPTIMAL_PARTICLE_SYSTEM CCParticleSystemQuad
-
-// ARMv6 use "Point" particle
-#elif __arm__
-	#define ARCH_OPTIMAL_PARTICLE_SYSTEM CCParticleSystemPoint
-#else
-	#error(unknown architecture)
-#endif
-
-
 //! A fire particle system
-@interface CCParticleFire: ARCH_OPTIMAL_PARTICLE_SYSTEM
+@interface CCParticleFire: CCParticleSystemQuad
 {
 }
+// needed for BridgeSupport
+-(id) init;
 @end
 
 //! A fireworks particle system
-@interface CCParticleFireworks : ARCH_OPTIMAL_PARTICLE_SYSTEM
+@interface CCParticleFireworks : CCParticleSystemQuad
 {
 }
+// needed for BridgeSupport
+-(id) init;
 @end
 
 //! A sun particle system
-@interface CCParticleSun : ARCH_OPTIMAL_PARTICLE_SYSTEM
+@interface CCParticleSun : CCParticleSystemQuad
 {
 }
+// needed for BridgeSupport
+-(id) init;
 @end
 
 //! A galaxy particle system
-@interface CCParticleGalaxy : ARCH_OPTIMAL_PARTICLE_SYSTEM
+@interface CCParticleGalaxy : CCParticleSystemQuad
 {
 }
+// needed for BridgeSupport
+-(id) init;
 @end
 
 //! A flower particle system
-@interface CCParticleFlower : ARCH_OPTIMAL_PARTICLE_SYSTEM
+@interface CCParticleFlower : CCParticleSystemQuad
 {
 }
+// needed for BridgeSupport
+-(id) init;
 @end
 
 //! A meteor particle system
-@interface CCParticleMeteor : ARCH_OPTIMAL_PARTICLE_SYSTEM
+@interface CCParticleMeteor : CCParticleSystemQuad
 {
 }
+// needed for BridgeSupport
+-(id) init;
 @end
 
 //! An spiral particle system
-@interface CCParticleSpiral : ARCH_OPTIMAL_PARTICLE_SYSTEM
+@interface CCParticleSpiral : CCParticleSystemQuad
 {
 }
+// needed for BridgeSupport
+-(id) init;
 @end
 
 //! An explosion particle system
-@interface CCParticleExplosion : ARCH_OPTIMAL_PARTICLE_SYSTEM
+@interface CCParticleExplosion : CCParticleSystemQuad
 {
 }
+// needed for BridgeSupport
+-(id) init;
 @end
 
 //! An smoke particle system
-@interface CCParticleSmoke : ARCH_OPTIMAL_PARTICLE_SYSTEM
+@interface CCParticleSmoke : CCParticleSystemQuad
 {
 }
+// needed for BridgeSupport
+-(id) init;
 @end
 
 //! An snow particle system
-@interface CCParticleSnow : ARCH_OPTIMAL_PARTICLE_SYSTEM
+@interface CCParticleSnow : CCParticleSystemQuad
 {
 }
+// needed for BridgeSupport
+-(id) init;
 @end
 
 //! A rain particle system
-@interface CCParticleRain : ARCH_OPTIMAL_PARTICLE_SYSTEM
+@interface CCParticleRain : CCParticleSystemQuad
 {
 }
+// needed for BridgeSupport
+-(id) init;
 @end
