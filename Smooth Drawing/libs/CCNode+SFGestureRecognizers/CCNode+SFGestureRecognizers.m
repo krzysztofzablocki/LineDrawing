@@ -343,7 +343,7 @@ static NSString *const UIGestureRecognizerSFGestureRecognizersPassingDelegateKey
 - (BOOL)sf_isPointInArea:(CGPoint)pt
 #endif
 {
-  if (!visible_ || !isRunning_) {
+  if (!_visible || !_isRunning) {
     return NO;
   }
 
@@ -402,7 +402,7 @@ static NSString *const UIGestureRecognizerSFGestureRecognizersPassingDelegateKey
 
   BOOL rslt = NO;
   CCNode *child;
-  CCARRAY_FOREACH(children_, child ){
+  CCARRAY_FOREACH(_children, child ){
 #if SF_GESTURE_RECOGNIZERS_USE_SHORTHAND
   if ([child isNodeInTreeTouched:pt])
 #else

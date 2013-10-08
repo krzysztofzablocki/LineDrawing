@@ -97,7 +97,7 @@ typedef struct _LineVertex {
       }
     renderTexture.position = ccp(height * 0.5f, width * 0.5f);
 
-    [renderTexture clear:1.0f g:1.0f b:1.0f a:0];
+    [renderTexture clear:1.0f g:1.0f b:1.0f a:1.0f];
     [self addChild:renderTexture];
 
     self.isTouchEnabled = YES;
@@ -270,8 +270,8 @@ typedef struct _LineVertex {
 
 - (void)fillLineTriangles:(LineVertex *)vertices count:(NSUInteger)count withColor:(ccColor4F)color
 {
-  [shaderProgram_ use];
-  [shaderProgram_ setUniformForModelViewProjectionMatrix];
+  [_shaderProgram use];
+  [_shaderProgram setUniformsForBuiltins];
 
   ccGLEnableVertexAttribs(kCCVertexAttribFlag_Position | kCCVertexAttribFlag_Color);
 
@@ -308,11 +308,12 @@ typedef struct _LineVertex {
   glVertexAttribPointer(kCCVertexAttrib_Position, 3, GL_FLOAT, GL_FALSE, sizeof(LineVertex), &vertices[0].pos);
   glVertexAttribPointer(kCCVertexAttrib_Color, 4, GL_FLOAT, GL_FALSE, sizeof(LineVertex), &vertices[0].color);
 
-
+    
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE);
   glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
   glDrawArrays(GL_TRIANGLES, 0, (GLsizei)count);
 
-  for (unsigned int i = 0; i < [circlesPoints count] / 2; ++i) {
+  for (unsigned int i = 0; i < [circlesPoints count] / 2;   ++i) {
     LinePoint *prevPoint = [circlesPoints objectAtIndex:i * 2];
     LinePoint *curPoint = [circlesPoints objectAtIndex:i * 2 + 1];
     CGPoint dirVector = ccpNormalize(ccpSub(curPoint.pos, prevPoint.pos));
