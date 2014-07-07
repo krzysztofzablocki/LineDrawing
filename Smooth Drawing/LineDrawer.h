@@ -26,5 +26,5 @@
 
 #import "cocos2d.h"
 
-@interface LineDrawer : CCLayer
+@interface LineDrawer : CCNode
 @end
