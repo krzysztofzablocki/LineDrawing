@@ -25,7 +25,8 @@
 #import <CoreGraphics/CoreGraphics.h>
 #import "cocos2d.h"
 #import "LineDrawer.h"
-#import "CCNode+SFGestureRecognizers.h"
+#import "CCNode_Private.h" // shader stuff
+#import "CCRenderer_private.h" // access to get and stash renderer
 
 typedef struct _LineVertex {
   CGPoint pos;
@@ -81,33 +82,26 @@ typedef struct _LineVertex {
     velocities = [NSMutableArray array];
     circlesPoints = [NSMutableArray array];
 
-    self.shaderProgram = [[CCShaderCache sharedShaderCache] programForKey:kCCShader_PositionColor];
     overdraw = 3.0f;
 
-    renderTexture = [[CCRenderTexture alloc] initWithWidth:(int)self.contentSize.width height:(int)self.contentSize.height pixelFormat:kCCTexture2DPixelFormat_RGBA8888];
+		CGSize s = [[CCDirector sharedDirector] viewSize];
+    renderTexture = [[CCRenderTexture alloc] initWithWidth:s.width height:s.height pixelFormat:CCTexturePixelFormat_RGBA8888];
+		
+		renderTexture.positionType = CCPositionTypeNormalized;
     renderTexture.anchorPoint = ccp(0, 0);
-    float width;
-      float height;
-      if (self.contentSize.height > self.contentSize.width) {
-          width = self.contentSize.height;
-          height = self.contentSize.width;
-      } else {
-          width = self.contentSize.width;
-          height = self.contentSize.height;
-      }
-    renderTexture.position = ccp(height * 0.5f, width * 0.5f);
+    renderTexture.position = ccp(0.5f, 0.5f);
 
     [renderTexture clear:1.0f g:1.0f b:1.0f a:1.0f];
     [self addChild:renderTexture];
 
-    self.isTouchEnabled = YES;
+		[[[CCDirector sharedDirector] view] setUserInteractionEnabled:YES];
 
     UIPanGestureRecognizer *panGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePanGesture:)];
     panGestureRecognizer.maximumNumberOfTouches = 1;
-    [self addGestureRecognizer:panGestureRecognizer];
+    [[[CCDirector sharedDirector] view] addGestureRecognizer:panGestureRecognizer];
 
     UILongPressGestureRecognizer *longPressGestureRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPress:)];
-    [self addGestureRecognizer:longPressGestureRecognizer];
+    [[[CCDirector sharedDirector] view] addGestureRecognizer:longPressGestureRecognizer];
   }
   return self;
 }
@@ -261,19 +255,30 @@ typedef struct _LineVertex {
     angle += anglePerSegment;
   }
 
-  glVertexAttribPointer(kCCVertexAttrib_Position, 3, GL_FLOAT, GL_FALSE, sizeof(LineVertex), &vertices[0].pos);
-  glVertexAttribPointer(kCCVertexAttrib_Color, 4, GL_FLOAT, GL_FALSE, sizeof(LineVertex), &vertices[0].color);
-  glDrawArrays(GL_TRIANGLES, 0, numberOfSegments * 9);
+  CCRenderer *renderer = [CCRenderer currentRenderer];
+  GLKMatrix4 projection;
+  [renderer.globalShaderUniforms[CCShaderUniformProjection] getValue:&projection];
+  CCRenderBuffer buffer = [renderer enqueueTriangles:numberOfSegments * 3 andVertexes:numberOfSegments * 9 withState:self.renderState globalSortOrder:1];
+
+  CCVertex vertex;
+  for (int i = 0; i < numberOfSegments * 9; i++) {
+    vertex.position = GLKVector4Make(vertices[i].pos.x, vertices[i].pos.y, 0.0, 1.0);
+    vertex.color = GLKVector4Make(vertices[i].color.r, vertices[i].color.g, vertices[i].color.b, vertices[i].color.a);
+    CCRenderBufferSetVertex(buffer, i, CCVertexApplyTransform(vertex, &projection));
+  }
+	
+  for (unsigned int i = 0; i < numberOfSegments * 3; i++) {
+    CCRenderBufferSetTriangle(buffer, i, i*3, (i*3)+1, (i*3)+2);
+  }
 
   free(vertices);
 }
 
 - (void)fillLineTriangles:(LineVertex *)vertices count:(NSUInteger)count withColor:(ccColor4F)color
 {
-  [_shaderProgram use];
-  [_shaderProgram setUniformsForBuiltins];
-
-  ccGLEnableVertexAttribs(kCCVertexAttribFlag_Position | kCCVertexAttribFlag_Color);
+  if (!count) {
+    return;
+  }
 
   ccColor4F fullColor = color;
   ccColor4F fadeOutColor = color;
@@ -305,15 +310,23 @@ typedef struct _LineVertex {
     vertices[i * 18 + 17].color = fadeOutColor;
   }
 
-  glVertexAttribPointer(kCCVertexAttrib_Position, 3, GL_FLOAT, GL_FALSE, sizeof(LineVertex), &vertices[0].pos);
-  glVertexAttribPointer(kCCVertexAttrib_Color, 4, GL_FLOAT, GL_FALSE, sizeof(LineVertex), &vertices[0].color);
-
-    
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-  glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-  glDrawArrays(GL_TRIANGLES, 0, (GLsizei)count);
-
-  for (unsigned int i = 0; i < [circlesPoints count] / 2;   ++i) {
+  CCRenderer *renderer = [CCRenderer currentRenderer];
+  GLKMatrix4 projection;
+  [renderer.globalShaderUniforms[CCShaderUniformProjection] getValue:&projection];
+  CCRenderBuffer buffer = [renderer enqueueTriangles:count/3 andVertexes:count withState:self.renderState globalSortOrder:1];
+	
+	CCVertex vertex;
+	for (unsigned int i = 0; i < count; i++) {
+    vertex.position = GLKVector4Make(vertices[i].pos.x, vertices[i].pos.y, 0.0, 1.0);
+    vertex.color = GLKVector4Make(vertices[i].color.r, vertices[i].color.g, vertices[i].color.b, vertices[i].color.a);
+    CCRenderBufferSetVertex(buffer, i, CCVertexApplyTransform(vertex, &projection));
+	}
+	
+	for (unsigned int i = 0; i < count/3; i++) {
+    CCRenderBufferSetTriangle(buffer, i, i*3, (i*3)+1, (i*3)+2);
+	}
+	
+	for (unsigned int i = 0; i < [circlesPoints count] / 2;   ++i) {
     LinePoint *prevPoint = [circlesPoints objectAtIndex:i * 2];
     LinePoint *curPoint = [circlesPoints objectAtIndex:i * 2 + 1];
     CGPoint dirVector = ccpNormalize(ccpSub(curPoint.pos, prevPoint.pos));
@@ -362,7 +375,7 @@ typedef struct _LineVertex {
   }
 }
 
-- (void)draw
+- (void)draw:(CCRenderer *)renderer transform:(const GLKMatrix4 *)transform
 {
   ccColor4F color = {0, 0, 0, 1};
   [renderTexture begin];

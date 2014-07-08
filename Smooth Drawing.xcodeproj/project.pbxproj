@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		2D312A44196A69EA00A5CDB2 /* IntroScene.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D312A43196A69E900A5CDB2 /* IntroScene.m */; };
+		2D312A48196A711900A5CDB2 /* libcocos2d.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 2D312A3F196A63F300A5CDB2 /* libcocos2d.a */; };
+		2D312A4A196A713900A5CDB2 /* GLKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2D312A49196A713900A5CDB2 /* GLKit.framework */; };
 		66E9739A17FA91DC00508221 /* CoreText.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 66E9739917FA91DC00508221 /* CoreText.framework */; };
 		FBD0E92E15457AF400FBE81E /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FBD0E92D15457AF400FBE81E /* QuartzCore.framework */; };
 		FBD0E93015457AF400FBE81E /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FBD0E92F15457AF400FBE81E /* OpenGLES.framework */; };
@@ -17,7 +19,6 @@
 		FBD0E93815457AF400FBE81E /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FBD0E93715457AF400FBE81E /* UIKit.framework */; };
 		FBD0E93A15457AF400FBE81E /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FBD0E93915457AF400FBE81E /* Foundation.framework */; };
 		FBD0E93C15457AF400FBE81E /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FBD0E93B15457AF400FBE81E /* CoreGraphics.framework */; };
-		FBD0E93E15457AF400FBE81E /* GameKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FBD0E93D15457AF400FBE81E /* GameKit.framework */; };
 		FBD0E94215457AF500FBE81E /* Default.png in Resources */ = {isa = PBXBuildFile; fileRef = FBD0E94115457AF500FBE81E /* Default.png */; };
 		FBD0E94A15457AF500FBE81E /* Icon-72.png in Resources */ = {isa = PBXBuildFile; fileRef = FBD0E94915457AF500FBE81E /* Icon-72.png */; };
 		FBD0E94C15457AF500FBE81E /* Icon-Small-50.png in Resources */ = {isa = PBXBuildFile; fileRef = FBD0E94B15457AF500FBE81E /* Icon-Small-50.png */; };
@@ -29,7 +30,6 @@
 		FBD0EAAC15457AF800FBE81E /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = FBD0EAAB15457AF800FBE81E /* main.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		FBD0EAAF15457AF800FBE81E /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = FBD0EAAE15457AF800FBE81E /* AppDelegate.m */; };
 		FBF3F67615457B89001E6DCB /* LineDrawer.m in Sources */ = {isa = PBXBuildFile; fileRef = FBF3F67515457B89001E6DCB /* LineDrawer.m */; };
-		FBF3F67A15457BA8001E6DCB /* CCNode+SFGestureRecognizers.m in Sources */ = {isa = PBXBuildFile; fileRef = FBF3F67915457BA8001E6DCB /* CCNode+SFGestureRecognizers.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -53,6 +53,7 @@
 		2D312A38196A63F200A5CDB2 /* cocos2d-ios.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "cocos2d-ios.xcodeproj"; path = "libs/cocos2d-iphone/cocos2d-ios.xcodeproj"; sourceTree = "<group>"; };
 		2D312A42196A69E900A5CDB2 /* IntroScene.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IntroScene.h; sourceTree = "<group>"; };
 		2D312A43196A69E900A5CDB2 /* IntroScene.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IntroScene.m; sourceTree = "<group>"; };
+		2D312A49196A713900A5CDB2 /* GLKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLKit.framework; path = System/Library/Frameworks/GLKit.framework; sourceTree = SDKROOT; };
 		66E9739917FA91DC00508221 /* CoreText.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreText.framework; path = System/Library/Frameworks/CoreText.framework; sourceTree = SDKROOT; };
 		FBD0E92915457AF400FBE81E /* Smooth Drawing.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Smooth Drawing.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		FBD0E92D15457AF400FBE81E /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
@@ -63,7 +64,6 @@
 		FBD0E93715457AF400FBE81E /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		FBD0E93915457AF400FBE81E /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		FBD0E93B15457AF400FBE81E /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
-		FBD0E93D15457AF400FBE81E /* GameKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameKit.framework; path = System/Library/Frameworks/GameKit.framework; sourceTree = SDKROOT; };
 		FBD0E94115457AF500FBE81E /* Default.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = Default.png; path = Resources/Default.png; sourceTree = "<group>"; };
 		FBD0E94915457AF500FBE81E /* Icon-72.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "Icon-72.png"; path = "Resources/Icon-72.png"; sourceTree = "<group>"; };
 		FBD0E94B15457AF500FBE81E /* Icon-Small-50.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "Icon-Small-50.png"; path = "Resources/Icon-Small-50.png"; sourceTree = "<group>"; };
@@ -79,8 +79,6 @@
 		FBD0EAAE15457AF800FBE81E /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
 		FBF3F67415457B89001E6DCB /* LineDrawer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LineDrawer.h; sourceTree = "<group>"; };
 		FBF3F67515457B89001E6DCB /* LineDrawer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LineDrawer.m; sourceTree = "<group>"; };
-		FBF3F67815457BA8001E6DCB /* CCNode+SFGestureRecognizers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "CCNode+SFGestureRecognizers.h"; sourceTree = "<group>"; };
-		FBF3F67915457BA8001E6DCB /* CCNode+SFGestureRecognizers.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "CCNode+SFGestureRecognizers.m"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -88,6 +86,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2D312A4A196A713900A5CDB2 /* GLKit.framework in Frameworks */,
+				2D312A48196A711900A5CDB2 /* libcocos2d.a in Frameworks */,
 				66E9739A17FA91DC00508221 /* CoreText.framework in Frameworks */,
 				FBD0E92E15457AF400FBE81E /* QuartzCore.framework in Frameworks */,
 				FBD0E93015457AF400FBE81E /* OpenGLES.framework in Frameworks */,
@@ -97,7 +97,6 @@
 				FBD0E93815457AF400FBE81E /* UIKit.framework in Frameworks */,
 				FBD0E93A15457AF400FBE81E /* Foundation.framework in Frameworks */,
 				FBD0E93C15457AF400FBE81E /* CoreGraphics.framework in Frameworks */,
-				FBD0E93E15457AF400FBE81E /* GameKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -132,6 +131,7 @@
 		FBD0E92C15457AF400FBE81E /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				2D312A49196A713900A5CDB2 /* GLKit.framework */,
 				66E9739917FA91DC00508221 /* CoreText.framework */,
 				FBD0E92D15457AF400FBE81E /* QuartzCore.framework */,
 				FBD0E92F15457AF400FBE81E /* OpenGLES.framework */,
@@ -141,7 +141,6 @@
 				FBD0E93715457AF400FBE81E /* UIKit.framework */,
 				FBD0E93915457AF400FBE81E /* Foundation.framework */,
 				FBD0E93B15457AF400FBE81E /* CoreGraphics.framework */,
-				FBD0E93D15457AF400FBE81E /* GameKit.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -149,12 +148,12 @@
 		FBD0E93F15457AF400FBE81E /* Smooth Drawing */ = {
 			isa = PBXGroup;
 			children = (
-				FBF3F67415457B89001E6DCB /* LineDrawer.h */,
-				FBF3F67515457B89001E6DCB /* LineDrawer.m */,
 				FBD0EAAD15457AF800FBE81E /* AppDelegate.h */,
 				FBD0EAAE15457AF800FBE81E /* AppDelegate.m */,
 				2D312A42196A69E900A5CDB2 /* IntroScene.h */,
 				2D312A43196A69E900A5CDB2 /* IntroScene.m */,
+				FBF3F67415457B89001E6DCB /* LineDrawer.h */,
+				FBF3F67515457B89001E6DCB /* LineDrawer.m */,
 				FBD0E94015457AF500FBE81E /* Resources */,
 				FBD0E95815457AF500FBE81E /* libs */,
 				FBD0EAA915457AF800FBE81E /* Supporting Files */,
@@ -182,7 +181,6 @@
 			isa = PBXGroup;
 			children = (
 				2D312A38196A63F200A5CDB2 /* cocos2d-ios.xcodeproj */,
-				FBF3F67715457BA8001E6DCB /* CCNode+SFGestureRecognizers */,
 			);
 			name = libs;
 			sourceTree = "<group>";
@@ -194,16 +192,6 @@
 				FBD0EAAB15457AF800FBE81E /* main.m */,
 			);
 			name = "Supporting Files";
-			sourceTree = "<group>";
-		};
-		FBF3F67715457BA8001E6DCB /* CCNode+SFGestureRecognizers */ = {
-			isa = PBXGroup;
-			children = (
-				FBF3F67815457BA8001E6DCB /* CCNode+SFGestureRecognizers.h */,
-				FBF3F67915457BA8001E6DCB /* CCNode+SFGestureRecognizers.m */,
-			);
-			name = "CCNode+SFGestureRecognizers";
-			path = "libs/CCNode+SFGestureRecognizers";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -294,7 +282,6 @@
 				FBD0EAAC15457AF800FBE81E /* main.m in Sources */,
 				FBD0EAAF15457AF800FBE81E /* AppDelegate.m in Sources */,
 				FBF3F67615457B89001E6DCB /* LineDrawer.m in Sources */,
-				FBF3F67A15457BA8001E6DCB /* CCNode+SFGestureRecognizers.m in Sources */,
 				2D312A44196A69EA00A5CDB2 /* IntroScene.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -402,6 +389,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				COPY_PHASE_STRIP = YES;
+				GCC_OPTIMIZATION_LEVEL = fast;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Smooth Drawing/Prefix.pch";
 				HEADER_SEARCH_PATHS = (
