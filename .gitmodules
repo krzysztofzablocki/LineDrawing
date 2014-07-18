@@ -1,0 +1,3 @@
+[submodule "Smooth Drawing/libs/cocos2d-iphone"]
+	path = Smooth Drawing/libs/cocos2d-iphone
+	url = https://github.com/cocos2d/cocos2d-iphone.git
