@@ -3,21 +3,19 @@ Sample drawing:
 Purpose
 --------------
 
-Smooth drawing is a sample project showing exactly how to create a nice and smooth drawing application, it draws nice anti-aliased lines and the feel is really natural, you can read about it's creation at: http://www.merowing.info/2012/04/drawing-smooth-lines-with-cocos2d-ios-inspired-by-paper/
-I decided to create this after finding out that there isn't really a complete solution released and many people try to make something like that but fail at some point. 
+When I was creating my app called [Foldify](http://foldifyapp.com), I needed a good quality drawing algorithm, there was a lack of proper end-to-end solution on the network.
 
-I hope you like it, spread the word so that more people will be able to learn / use this.
+Because of that gap in the knowdlege I've researched and implemented my own algorithm, using OpenGL to create anti-aliased lines at low cost, it also features speed based width similar to [Paper (by FiftyThree)](https://www.fiftythree.com/paper) app.
 
-[Follow me on twitter][1]
+You can read tutorial explaining all the steps neccesary for creating this algorithm at my blog: http://www.merowing.info/2012/04/drawing-smooth-lines-with-cocos2d-ios-inspired-by-paper/
 
-ARC Compatibility
+License
 ------------------
+MIT. Use it for anything you want, just attribute my work. 
+Let me know if you do use it somewhere, I'd love to hear about it :)
 
-Project uses ARC, I put all the code inside LineDrawer class ( don't worry it's only ~500 lines ) so that you can just add -fobjc-arc on this class in non-ARC projects.
-
-Spread the word and read my blog post about this project to learn more.
-
-  [1]: http://twitter.com/merowing_
+Enjoy && Share other crazy stuff. Let me know if you used
+[Follow me on twitter][http://twitter.com/merowing_]
 
 Building
 ------------------
