@@ -1,6 +1,5 @@
-Sample drawing:
 ![](https://github.com/krzysztofzablocki/smooth-drawing/raw/master/Example.png)
-Purpose
+Line Drawing - Beatiful and fast smooth line drawing algorithm
 --------------
 
 When I was creating my app called [Foldify](http://foldifyapp.com), I needed a good quality drawing algorithm, there was a lack of proper end-to-end solution on the network.
