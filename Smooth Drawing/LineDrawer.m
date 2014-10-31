@@ -45,44 +45,59 @@ typedef struct _LineVertex {
 @synthesize width;
 @end
 
-@interface LineDrawer ()
-
-- (void)fillLineTriangles:(LineVertex *)vertices count:(NSUInteger)count withColor:(ccColor4F)color;
-
-- (void)startNewLineFrom:(CGPoint)newPoint withSize:(CGFloat)aSize;
-
-- (void)endLineAt:(CGPoint)aEndPoint withSize:(CGFloat)aSize;
-
-- (void)addPoint:(CGPoint)newPoint withSize:(CGFloat)size;
-
-- (void)drawLines:(NSArray *)linePoints withColor:(ccColor4F)color;
-
-@end
-
-@implementation LineDrawer {
+@interface Line  : NSObject {
+@public
   NSMutableArray *points;
   NSMutableArray *velocities;
   NSMutableArray *circlesPoints;
-
+	
   BOOL connectingLine;
   CGPoint prevC, prevD;
   CGPoint prevG;
   CGPoint prevI;
   float overdraw;
-
-  CCRenderTexture *renderTexture;
+	
   BOOL finishingLine;
+	
+	CGPoint currentGLPoint;
+	CGPoint prevPoint;
+	NSTimeInterval prevTime;
 }
+
+@end
+
+@implementation Line
+@end
+
+
+@interface LineDrawer ()
+
+- (void)fillLineTriangles:(LineVertex *)vertices count:(NSUInteger)count withColor:(ccColor4F)color forLine:(Line*)line;
+
+- (void)addPoint:(CGPoint)newPoint withSize:(CGFloat)size toLine:(Line*)line;
+
+- (void)drawLines:(NSArray *)linePoints withColor:(ccColor4F)color forLine:(Line*) line;
+
+@end
+
+@implementation LineDrawer {
+	NSMutableDictionary *lines;
+  CCRenderTexture *renderTexture;
+}
+
++(NSString*) idForTouch:(UITouch*)touch {
+	NSString *touchDesc = [touch description];
+	// <UITouch: 0x20039290>
+	NSString *touchId = [touchDesc substringWithRange:NSMakeRange(10, 10)];
+	return touchId;
+}
+
 
 - (id)init
 {
   self = [super init];
   if (self) {
-    points = [NSMutableArray array];
-    velocities = [NSMutableArray array];
-    circlesPoints = [NSMutableArray array];
-
-    overdraw = 3.0f;
+		lines = [NSMutableDictionary dictionary];
 
 		CGSize s = [[CCDirector sharedDirector] viewSize];
     renderTexture = [[CCRenderTexture alloc] initWithWidth:s.width height:s.height pixelFormat:CCTexturePixelFormat_RGBA8888];
@@ -95,10 +110,9 @@ typedef struct _LineVertex {
     [self addChild:renderTexture];
 
 		[[[CCDirector sharedDirector] view] setUserInteractionEnabled:YES];
-
-    UIPanGestureRecognizer *panGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePanGesture:)];
-    panGestureRecognizer.maximumNumberOfTouches = 1;
-    [[[CCDirector sharedDirector] view] addGestureRecognizer:panGestureRecognizer];
+		[[[CCDirector sharedDirector] view] setMultipleTouchEnabled:YES];
+		[self setMultipleTouchEnabled:YES];
+		[self setUserInteractionEnabled:YES];
 
     UILongPressGestureRecognizer *longPressGestureRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPress:)];
     [[[CCDirector sharedDirector] view] addGestureRecognizer:longPressGestureRecognizer];
@@ -106,34 +120,77 @@ typedef struct _LineVertex {
   return self;
 }
 
-#pragma mark - Handling points
-- (void)startNewLineFrom:(CGPoint)newPoint withSize:(CGFloat)aSize
-{
-  connectingLine = NO;
-  [self addPoint:newPoint withSize:aSize];
+#pragma mark - Handling touches
+
+- (void)touchBegan:(UITouch *)touch withEvent:(UIEvent *)event {
+	CGPoint location = [touch locationInNode:self];
+	CGPoint gl_location = [[CCDirector sharedDirector] convertTouchToGL:touch];
+	Line *line = [[Line alloc] init];
+	line->points = [NSMutableArray array];
+	line->velocities = [NSMutableArray array];
+	line->circlesPoints = [NSMutableArray array];
+	line->overdraw = 3.0f;
+	line->connectingLine = NO;
+	line->prevTime = touch.timestamp;
+	line->prevPoint = location;
+	line->currentGLPoint = gl_location;
+	CGFloat size = [self extractSize:touch forLine:line];
+	[self addPoint:gl_location withSize:size toLine:line];
+	[self addPoint:gl_location withSize:size toLine:line];
+	[self addPoint:gl_location withSize:size toLine:line];
+	NSString *touch_id = [LineDrawer idForTouch:touch];
+	[lines setObject:line forKey:touch_id];
 }
 
-- (void)endLineAt:(CGPoint)aEndPoint withSize:(CGFloat)aSize
+- (void)touchMoved:(UITouch *)touch withEvent:(UIEvent *)event
 {
-  [self addPoint:aEndPoint withSize:aSize];
-  finishingLine = YES;
+	NSString *touch_id = [LineDrawer idForTouch:touch];
+	Line *line = [lines objectForKey:touch_id];
+	//! skip points that are too close
+	float eps = 1.5f;
+	CGPoint location = [touch locationInNode:self];
+	CGPoint gl_location = [[CCDirector sharedDirector] convertTouchToGL:touch];
+	if ([line->points count] > 0) {
+		float length = ccpLength(ccpSub([(LinePoint *)[line->points lastObject] pos], gl_location));
+		if (length < eps) {
+			return;
+		}
+	}
+	line->currentGLPoint = gl_location;
+	float size = [self extractSize:touch forLine:line];
+	[self addPoint:location	withSize:size toLine:line];
 }
 
-- (void)addPoint:(CGPoint)newPoint withSize:(CGFloat)size
-{
+- (void)touchEnded:(UITouch *)touch withEvent:(UIEvent *)event {
+	NSString *touch_id = [LineDrawer idForTouch:touch];
+	Line *line = [lines objectForKey:touch_id];
+	CGPoint gl_location = [[CCDirector sharedDirector] convertTouchToGL:touch];
+	CGFloat size = [self extractSize:touch forLine:line];
+	[self addPoint:gl_location withSize:size toLine:line];
+	line->finishingLine = YES;
+}
+
+- (void)touchCancelled:(UITouch *)touch withEvent:(UIEvent *)event {
+	NSLog(@"ccTouchesCancelled: THIS HAPPENS WHEN YOU ALLOW MULTI-TOUCH GESTURES ON IPAD, TURN THEM OFF! SEE ALSO WHAT MIGHT CAUSE IT ON IPHONE/IPOD TOUCH");
+	NSLog(@"also happens with long-press canceling stuff, which is a little annoying/awkward. and...what else? maybe a phone call or something?");
+	[self touchEnded:touch withEvent:event];
+}
+
+- (void)addPoint:(CGPoint)newPoint withSize:(CGFloat)size toLine:(Line*) line {
   LinePoint *point = [[LinePoint alloc] init];
   point.pos = newPoint;
   point.width = size;
-  [points addObject:point];
+  [line->points addObject:point];
 }
+
 
 #pragma mark - Drawing
 
 #define ADD_TRIANGLE(A, B, C, Z) vertices[index].pos = A, vertices[index++].z = Z, vertices[index].pos = B, vertices[index++].z = Z, vertices[index].pos = C, vertices[index++].z = Z
 
-- (void)drawLines:(NSArray *)linePoints withColor:(ccColor4F)color
+- (void)drawLines:(NSArray *)linePoints withColor:(ccColor4F)color forLine:(Line*) line
 {
-  unsigned int numberOfVertices = ([linePoints count] - 1) * 18;
+  unsigned long numberOfVertices = ([linePoints count] - 1) * 18;
   LineVertex *vertices = calloc(sizeof(LineVertex), numberOfVertices);
 
   CGPoint prevPoint = [(LinePoint *)[linePoints objectAtIndex:0] pos];
@@ -158,58 +215,58 @@ typedef struct _LineVertex {
     CGPoint D = ccpSub(curPoint, ccpMult(perpendicular, curValue / 2));
 
     //! continuing line
-    if (connectingLine || index > 0) {
-      A = prevC;
-      B = prevD;
+    if (line->connectingLine || index > 0) {
+      A = line->prevC;
+      B = line->prevD;
     } else if (index == 0) {
       //! circle at start of line, revert direction
-      [circlesPoints addObject:pointValue];
-      [circlesPoints addObject:[linePoints objectAtIndex:i - 1]];
+      [line->circlesPoints addObject:pointValue];
+      [line->circlesPoints addObject:[linePoints objectAtIndex:i - 1]];
     }
 
     ADD_TRIANGLE(A, B, C, 1.0f);
     ADD_TRIANGLE(B, C, D, 1.0f);
 
-    prevD = D;
-    prevC = C;
-    if (finishingLine && (i == [linePoints count] - 1)) {
-      [circlesPoints addObject:[linePoints objectAtIndex:i - 1]];
-      [circlesPoints addObject:pointValue];
-      finishingLine = NO;
+    line->prevD = D;
+    line->prevC = C;
+    if (line->finishingLine && (i == [linePoints count] - 1)) {
+      [line->circlesPoints addObject:[linePoints objectAtIndex:i - 1]];
+      [line->circlesPoints addObject:pointValue];
+      line->finishingLine = NO;
     }
     prevPoint = curPoint;
     prevValue = curValue;
 
     //! Add overdraw
-    CGPoint F = ccpAdd(A, ccpMult(perpendicular, overdraw));
-    CGPoint G = ccpAdd(C, ccpMult(perpendicular, overdraw));
-    CGPoint H = ccpSub(B, ccpMult(perpendicular, overdraw));
-    CGPoint I = ccpSub(D, ccpMult(perpendicular, overdraw));
+    CGPoint F = ccpAdd(A, ccpMult(perpendicular, line->overdraw));
+    CGPoint G = ccpAdd(C, ccpMult(perpendicular, line->overdraw));
+    CGPoint H = ccpSub(B, ccpMult(perpendicular, line->overdraw));
+    CGPoint I = ccpSub(D, ccpMult(perpendicular, line->overdraw));
 
     //! end vertices of last line are the start of this one, also for the overdraw
-    if (connectingLine || index > 6) {
-      F = prevG;
-      H = prevI;
+    if (line->connectingLine || index > 6) {
+      F = line->prevG;
+      H = line->prevI;
     }
 
-    prevG = G;
-    prevI = I;
+    line->prevG = G;
+    line->prevI = I;
 
     ADD_TRIANGLE(F, A, G, 2.0f);
     ADD_TRIANGLE(A, G, C, 2.0f);
     ADD_TRIANGLE(B, H, D, 2.0f);
     ADD_TRIANGLE(H, D, I, 2.0f);
   }
-  [self fillLineTriangles:vertices count:index withColor:color];
+  [self fillLineTriangles:vertices count:index withColor:color forLine:line];
 
   if (index > 0) {
-    connectingLine = YES;
+    line->connectingLine = YES;
   }
 
   free(vertices);
 }
 
-- (void)fillLineEndPointAt:(CGPoint)center direction:(CGPoint)aLineDir radius:(CGFloat)radius andColor:(ccColor4F)color
+- (void)fillLineEndPointAt:(CGPoint)center direction:(CGPoint)aLineDir radius:(CGFloat)radius andColor:(ccColor4F)color forLine:(Line*)line
 {
   int numberOfSegments = 32;
   LineVertex *vertices = malloc(sizeof(LineVertex) * numberOfSegments * 9);
@@ -239,15 +296,15 @@ typedef struct _LineVertex {
     }
 
     //! add overdraw
-    vertices[i * 9 + 3].pos = ccpAdd(prevPoint, ccpMult(prevDir, overdraw));
+    vertices[i * 9 + 3].pos = ccpAdd(prevPoint, ccpMult(prevDir, line->overdraw));
     vertices[i * 9 + 3].color.a = 0;
     vertices[i * 9 + 4].pos = prevPoint;
-    vertices[i * 9 + 5].pos = ccpAdd(curPoint, ccpMult(dir, overdraw));
+    vertices[i * 9 + 5].pos = ccpAdd(curPoint, ccpMult(dir, line->overdraw));
     vertices[i * 9 + 5].color.a = 0;
 
     vertices[i * 9 + 6].pos = prevPoint;
     vertices[i * 9 + 7].pos = curPoint;
-    vertices[i * 9 + 8].pos = ccpAdd(curPoint, ccpMult(dir, overdraw));
+    vertices[i * 9 + 8].pos = ccpAdd(curPoint, ccpMult(dir, line->overdraw));
     vertices[i * 9 + 8].color.a = 0;
 
     prevPoint = curPoint;
@@ -274,7 +331,7 @@ typedef struct _LineVertex {
   free(vertices);
 }
 
-- (void)fillLineTriangles:(LineVertex *)vertices count:(NSUInteger)count withColor:(ccColor4F)color
+- (void)fillLineTriangles:(LineVertex *)vertices count:(NSUInteger)count withColor:(ccColor4F)color forLine:(Line*)line
 {
   if (!count) {
     return;
@@ -326,24 +383,24 @@ typedef struct _LineVertex {
     CCRenderBufferSetTriangle(buffer, i, i*3, (i*3)+1, (i*3)+2);
 	}
 	
-	for (unsigned int i = 0; i < [circlesPoints count] / 2;   ++i) {
-    LinePoint *prevPoint = [circlesPoints objectAtIndex:i * 2];
-    LinePoint *curPoint = [circlesPoints objectAtIndex:i * 2 + 1];
+	for (unsigned int i = 0; i < [line->circlesPoints count] / 2;   ++i) {
+    LinePoint *prevPoint = [line->circlesPoints objectAtIndex:i * 2];
+    LinePoint *curPoint = [line->circlesPoints objectAtIndex:i * 2 + 1];
     CGPoint dirVector = ccpNormalize(ccpSub(curPoint.pos, prevPoint.pos));
 
-    [self fillLineEndPointAt:curPoint.pos direction:dirVector radius:curPoint.width * 0.5f andColor:color];
+    [self fillLineEndPointAt:curPoint.pos direction:dirVector radius:curPoint.width * 0.5f andColor:color forLine:line];
   }
-  [circlesPoints removeAllObjects];
+  [line->circlesPoints removeAllObjects];
 }
 
-- (NSMutableArray *)calculateSmoothLinePoints
+- (NSMutableArray *)calculateSmoothLinePointsForLine:(Line*)line
 {
-  if ([points count] > 2) {
+  if (line->points && [line->points count] > 2) {
     NSMutableArray *smoothedPoints = [NSMutableArray array];
-    for (unsigned int i = 2; i < [points count]; ++i) {
-      LinePoint *prev2 = [points objectAtIndex:i - 2];
-      LinePoint *prev1 = [points objectAtIndex:i - 1];
-      LinePoint *cur = [points objectAtIndex:i];
+    for (unsigned int i = 2; i < [line->points count]; ++i) {
+      LinePoint *prev2 = [line->points objectAtIndex:i - 2];
+      LinePoint *prev1 = [line->points objectAtIndex:i - 1];
+      LinePoint *cur = [line->points objectAtIndex:i];
 
       CGPoint midPoint1 = ccpMult(ccpAdd(prev1.pos, prev2.pos), 0.5f);
       CGPoint midPoint2 = ccpMult(ccpAdd(cur.pos, prev1.pos), 0.5f);
@@ -368,7 +425,7 @@ typedef struct _LineVertex {
       [smoothedPoints addObject:finalPoint];
     }
     //! we need to leave last 2 points for next draw
-    [points removeObjectsInRange:NSMakeRange(0, [points count] - 2)];
+    [line->points removeObjectsInRange:NSMakeRange(0, [line->points count] - 2)];
     return smoothedPoints;
   } else {
     return nil;
@@ -379,11 +436,13 @@ typedef struct _LineVertex {
 {
   ccColor4F color = {0, 0, 0, 1};
   [renderTexture begin];
-
-  NSMutableArray *smoothedPoints = [self calculateSmoothLinePoints];
-  if (smoothedPoints) {
-    [self drawLines:smoothedPoints withColor:color];
-  }
+	
+	for (Line* line in [lines objectEnumerator]) {
+		NSMutableArray *smoothedPoints = [self calculateSmoothLinePointsForLine:line];
+		if (smoothedPoints) {
+			[self drawLines:smoothedPoints withColor:color forLine:line];
+		}
+	}
   [renderTexture end];
 }
 
@@ -391,20 +450,30 @@ typedef struct _LineVertex {
 
 #pragma mark - GestureRecognizers
 
-- (float)extractSize:(UIPanGestureRecognizer *)panGestureRecognizer
+- (float)extractSize:(UITouch *)touch forLine:(Line*)line
 {
   //! result of trial & error
-  float vel = ccpLength([panGestureRecognizer velocityInView:panGestureRecognizer.view]);
+	CGPoint prevPoint = line->prevPoint;
+	NSTimeInterval prevTime = line->prevTime;
+	line->prevPoint = [touch locationInView:touch.view];
+	NSTimeInterval timeDiff = touch.timestamp - prevTime;
+	line->prevTime = touch.timestamp;
+	float vel;
+	if (timeDiff > 0) {
+		vel = ccpDistance(prevPoint, line->prevPoint) / (timeDiff);
+	} else {
+		vel = 0;
+	}
   float size = vel / 166.0f;
   size = clampf(size, 1, 40);
-
-  if ([velocities count] > 1) {
-    size = size * 0.2f + [[velocities objectAtIndex:[velocities count] - 1] floatValue] * 0.8f;
+  if ([line->velocities count] > 1) {
+    size = size * 0.2f + [[line->velocities objectAtIndex:[line->velocities count] - 1] floatValue] * 0.8f;
   }
-  [velocities addObject:[NSNumber numberWithFloat:size]];
+  [line->velocities addObject:[NSNumber numberWithFloat:size]];
   return size;
 }
 
+#if 0
 - (void)handlePanGesture:(UIPanGestureRecognizer *)panGestureRecognizer
 {
   const CGPoint point = [[CCDirector sharedDirector] convertToGL:[panGestureRecognizer locationInView:panGestureRecognizer.view]];
@@ -440,6 +509,7 @@ typedef struct _LineVertex {
     [self endLineAt:point withSize:size];
   }
 }
+#endif
 
 - (void)handleLongPress:(UILongPressGestureRecognizer *)longPressGestureRecognizer
 {
