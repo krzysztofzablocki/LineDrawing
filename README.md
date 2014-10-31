@@ -14,7 +14,7 @@ MIT. Use it for anything you want, just attribute my work.
 Let me know if you do use it somewhere, I'd love to hear about it :)
 
 Enjoy && Share other crazy stuff. Let me know if you used
-[Follow me on twitter][http://twitter.com/merowing_]
+[Follow me on twitter](http://twitter.com/merowing_)
 
 Building
 ------------------
