@@ -91,7 +91,7 @@ typedef struct _LineVertex {
     renderTexture.anchorPoint = ccp(0, 0);
     renderTexture.position = ccp(0.5f, 0.5f);
 
-    [renderTexture clear:1.0f g:1.0f b:1.0f a:1.0f];
+    [renderTexture clear:1.0f g:1.0f b:1.0f a:0.0f];
     [self addChild:renderTexture];
 
 		[[[CCDirector sharedDirector] view] setUserInteractionEnabled:YES];
@@ -211,6 +211,12 @@ typedef struct _LineVertex {
 
 - (void)fillLineEndPointAt:(CGPoint)center direction:(CGPoint)aLineDir radius:(CGFloat)radius andColor:(ccColor4F)color
 {
+  // Premultiplied alpha.
+  color.r *= color.a;
+  color.g *= color.a;
+  color.b *= color.a;
+  ccColor4F fadeOutColor = ccc4f(0, 0, 0, 0);
+	
   int numberOfSegments = 32;
   LineVertex *vertices = malloc(sizeof(LineVertex) * numberOfSegments * 9);
   float anglePerSegment = (float)(M_PI / (numberOfSegments - 1));
@@ -240,15 +246,15 @@ typedef struct _LineVertex {
 
     //! add overdraw
     vertices[i * 9 + 3].pos = ccpAdd(prevPoint, ccpMult(prevDir, overdraw));
-    vertices[i * 9 + 3].color.a = 0;
+    vertices[i * 9 + 3].color = fadeOutColor;
     vertices[i * 9 + 4].pos = prevPoint;
     vertices[i * 9 + 5].pos = ccpAdd(curPoint, ccpMult(dir, overdraw));
-    vertices[i * 9 + 5].color.a = 0;
+    vertices[i * 9 + 5].color = fadeOutColor;
 
     vertices[i * 9 + 6].pos = prevPoint;
     vertices[i * 9 + 7].pos = curPoint;
     vertices[i * 9 + 8].pos = ccpAdd(curPoint, ccpMult(dir, overdraw));
-    vertices[i * 9 + 8].color.a = 0;
+    vertices[i * 9 + 8].color = fadeOutColor;
 
     prevPoint = curPoint;
     prevDir = dir;
@@ -280,13 +286,15 @@ typedef struct _LineVertex {
     return;
   }
 
-  ccColor4F fullColor = color;
-  ccColor4F fadeOutColor = color;
-  fadeOutColor.a = 0;
+	ccColor4F fullColor = color;
+	fullColor.r *= fullColor.a;
+	fullColor.g *= fullColor.a;
+	fullColor.b *= fullColor.a;
+	ccColor4F fadeOutColor = ccc4f(0, 0, 0, 0); // Premultiplied alpha.
 
   for (int i = 0; i < count / 18; ++i) {
     for (int j = 0; j < 6; ++j) {
-      vertices[i * 18 + j].color = color;
+      vertices[i * 18 + j].color = fullColor;
     }
 
     //! FAG
@@ -311,6 +319,7 @@ typedef struct _LineVertex {
   }
 
   CCRenderer *renderer = [CCRenderer currentRenderer];
+	
   GLKMatrix4 projection;
   [renderer.globalShaderUniforms[CCShaderUniformProjection] getValue:&projection];
   CCRenderBuffer buffer = [renderer enqueueTriangles:count/3 andVertexes:count withState:self.renderState globalSortOrder:1];
@@ -377,7 +386,7 @@ typedef struct _LineVertex {
 
 - (void)draw:(CCRenderer *)renderer transform:(const GLKMatrix4 *)transform
 {
-  ccColor4F color = {0, 0, 0, 1};
+  ccColor4F color = {0, 0.5, 0, 1};
   [renderTexture begin];
 
   NSMutableArray *smoothedPoints = [self calculateSmoothLinePoints];
