@@ -28,12 +28,14 @@
 #import "CCNode_Private.h" // shader stuff
 #import "CCRenderer_private.h" // access to get and stash renderer
 
-typedef struct _LineVertex {
+#pragma mark - A data structure used during line rendering
+typedef struct {
 	CGPoint pos;
 	CGFloat z;
 	ccColor4F color;
 } LineVertex;
 
+#pragma mark - A simple class for holding position and width of a point on the line
 @interface LinePoint : NSObject
 @property(nonatomic, assign) CGPoint pos;
 @property(nonatomic, assign) CGFloat width;
@@ -42,6 +44,7 @@ typedef struct _LineVertex {
 @implementation LinePoint
 @end
 
+#pragma mark - The main LineDrawer class - creates a CCRenderTexture to draw on based on gesture recognition capturing the users input
 @implementation LineDrawer {
 	NSMutableArray<LinePoint*>* points;
 	NSMutableArray<NSNumber*>* velocities;
@@ -370,6 +373,7 @@ typedef struct _LineVertex {
 	}
 }
 
+#pragma mark This method does the actual drawing of the latest input onto the CCRenderTexture - called by the cocos2d system whenever the LineDrawer node needs updating
 - (void)draw:(CCRenderer *)renderer transform:(const GLKMatrix4 *)transform
 {
 	ccColor4F color = {0, 0.5, 0, 1};
@@ -382,9 +386,7 @@ typedef struct _LineVertex {
 	[renderTexture end];
 }
 
-#pragma mark - Math
-
-#pragma mark - GestureRecognizers
+#pragma mark - Math to calculate the thickness of the line based on velocity of touch movement
 
 - (CGFloat)extractSize:(UIPanGestureRecognizer *)panGestureRecognizer
 {
@@ -400,6 +402,8 @@ typedef struct _LineVertex {
 	[velocities addObject:@(size)];
 	return size;
 }
+
+#pragma mark - GestureRecognizer handling
 
 - (void)handlePanGesture:(UIPanGestureRecognizer *)panGestureRecognizer
 {
@@ -428,6 +432,8 @@ typedef struct _LineVertex {
 		}
 		CGFloat size = [self extractSize:panGestureRecognizer];
 		[self addPoint:point withSize:size];
+		
+		
 	}
 	
 	if (panGestureRecognizer.state == UIGestureRecognizerStateEnded) {
