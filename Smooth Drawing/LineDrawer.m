@@ -2,6 +2,7 @@
  * Smooth drawing: http://merowing.info
  *
  * Copyright (c) 2012 Krzysztof Zabłocki
+ * Copyright (c) 2014-2015 Richard Groves
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,7 +23,10 @@
  * THE SOFTWARE.
  *
  */
+
 #import <CoreGraphics/CoreGraphics.h>
+#import <UIKit/UIGestureRecognizerSubclass.h>
+
 #import "cocos2d.h"
 #import "LineDrawer.h"
 #import "CCNode_Private.h" // shader stuff
@@ -44,6 +48,43 @@ typedef struct {
 @implementation LinePoint
 @end
 
+
+#pragma mark - A subclass of UIPanGestureRecognizer to record touch force (if available)
+// Inspired by http://stackoverflow.com/a/4459547/701926
+
+@interface LineDrawGestureRecognizer : UIPanGestureRecognizer
+- (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event;
+- (void)touchesMoved:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event;
+- (void)touchesEnded:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event;
+@end
+
+@implementation LineDrawGestureRecognizer
+- (void)touchesBegan:(NSSet<UITouch*>*)touches withEvent:(UIEvent *)event
+{
+	[super touchesBegan:touches withEvent:event];
+	
+	if ([self.delegate respondsToSelector:@selector(gestureRecognizer:beganWithTouches:andEvent:)])
+		[(id<LineDrawGestureRecognizerDelegate>)self.delegate gestureRecognizer:self beganWithTouches:touches andEvent:event];
+}
+
+- (void)touchesMoved:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event
+{
+	[super touchesMoved:touches withEvent:event];
+	
+	if ([self.delegate respondsToSelector:@selector(gestureRecognizer:movedWithTouches:andEvent:)])
+		[(id<LineDrawGestureRecognizerDelegate>)self.delegate gestureRecognizer:self movedWithTouches:touches andEvent:event];
+}
+
+- (void)touchesEnded:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event
+{
+	[super touchesEnded:touches withEvent:event];
+	
+	if ([self.delegate respondsToSelector:@selector(gestureRecognizer:endedWithTouches:andEvent:)])
+		[(id<LineDrawGestureRecognizerDelegate>)self.delegate gestureRecognizer:self endedWithTouches:touches andEvent:event];
+}
+
+@end
+
 #pragma mark - The main LineDrawer class - creates a CCRenderTexture to draw on based on gesture recognition capturing the users input
 @implementation LineDrawer {
 	NSMutableArray<LinePoint*>* points;
@@ -58,6 +99,8 @@ typedef struct {
 	
 	CCRenderTexture *renderTexture;
 	BOOL finishingLine;
+	
+	CGFloat forceFraction; // Used when a stylus or 3D touch is giving force values. 0 < forceFraction <= 1 when force active. <=0 when no force value available
 }
 
 - (id)init
@@ -82,8 +125,9 @@ typedef struct {
 		
 		[[[CCDirector sharedDirector] view] setUserInteractionEnabled:YES];
 		
-		UIPanGestureRecognizer *panGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePanGesture:)];
+		LineDrawGestureRecognizer *panGestureRecognizer = [[LineDrawGestureRecognizer alloc] initWithTarget:self action:@selector(handlePanGesture:)];
 		panGestureRecognizer.maximumNumberOfTouches = 1;
+		panGestureRecognizer.delegate = self;
 		[[[CCDirector sharedDirector] view] addGestureRecognizer:panGestureRecognizer];
 		
 		UILongPressGestureRecognizer *longPressGestureRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPress:)];
@@ -390,10 +434,20 @@ typedef struct {
 
 - (CGFloat)extractSize:(UIPanGestureRecognizer *)panGestureRecognizer
 {
-	//! result of trial & error
-	CGFloat vel = ccpLength([panGestureRecognizer velocityInView:panGestureRecognizer.view]);
-	CGFloat size = vel / 166.0;
-	size = clampf(size, 1, 40);
+	CGFloat size;
+	
+	if (forceFraction > 0)
+	{
+		// TODO: Look at using the velocity information as well as touch force to decide the line width
+		size = 1.0 + forceFraction*39.0; // Keep it in the 1-40 range
+	}
+	else
+	{
+		//! result of trial & error
+		CGFloat vel = ccpLength([panGestureRecognizer velocityInView:panGestureRecognizer.view]);
+		size = vel / 166.0;
+		size = clampf(size, 1, 40);
+	}
 	
 	if ([velocities count] > 1) {
 		size = size * 0.2 + [velocities[velocities.count - 1] floatValue] * 0.8;
@@ -432,13 +486,12 @@ typedef struct {
 		}
 		CGFloat size = [self extractSize:panGestureRecognizer];
 		[self addPoint:point withSize:size];
-		
-		
 	}
 	
 	if (panGestureRecognizer.state == UIGestureRecognizerStateEnded) {
 		CGFloat size = [self extractSize:panGestureRecognizer];
 		[self endLineAt:point withSize:size];
+		forceFraction = -1; // In case we go from using a force device to a non-force one
 	}
 }
 
@@ -447,4 +500,39 @@ typedef struct {
 	[renderTexture beginWithClear:1.0 g:1.0 b:1.0 a:0];
 	[renderTexture end];
 }
+
+#pragma mark Getting access to the touches of the Pan gesture to work out if they have force values
+- (void) gestureRecognizer:(UIGestureRecognizer *)gr beganWithTouches:(NSSet<UITouch*>*)touches andEvent:(UIEvent *)event
+{
+	if ([UITouch instancesRespondToSelector:@selector(force)])
+	{
+		UITouch* t1 = touches.anyObject; // We only allow one touch so this will get it
+		forceFraction = t1.force/t1.maximumPossibleForce;
+		//CCLOG(@"Began touches (%d): %@", (int)touches.count, touches);
+		//CCLOG(@"ForceB value: %.1f of %.1f = %.2f%%", t1.force, t1.maximumPossibleForce, 100.0*forceFraction);
+	}
+}
+
+- (void) gestureRecognizer:(UIGestureRecognizer *)gr movedWithTouches:(NSSet<UITouch*>*)touches andEvent:(UIEvent *)event
+{
+	if ([UITouch instancesRespondToSelector:@selector(force)])
+	{
+		UITouch* t1 = touches.anyObject;
+		forceFraction = t1.force/t1.maximumPossibleForce;
+		//	CCLOG(@"Moved touches (%d): %@", (int)touches.count, touches);
+		//CCLOG(@"ForceM value: %.1f of %.1f = %.2f%%", t1.force, t1.maximumPossibleForce, 100.0*forceFraction);
+	}
+}
+
+- (void) gestureRecognizer:(UIGestureRecognizer *)gr endedWithTouches:(NSSet<UITouch*>*)touches andEvent:(UIEvent *)event
+{
+	if ([UITouch instancesRespondToSelector:@selector(force)])
+	{
+		UITouch* t1 = touches.anyObject;
+		forceFraction = t1.force/t1.maximumPossibleForce;
+		//	CCLOG(@"Ended touches (%d): %@", (int)touches.count, touches);
+		//CCLOG(@"ForceE value: %.1f of %.1f = %.2f%%", t1.force, t1.maximumPossibleForce, 100.0*forceFraction);
+	}
+}
+
 @end

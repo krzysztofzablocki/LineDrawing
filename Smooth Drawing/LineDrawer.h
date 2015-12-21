@@ -2,6 +2,7 @@
  * Smooth drawing: http://merowing.info
  *
  * Copyright (c) 2012 Krzysztof Zabłocki
+ * Copyright (c) 2014-2015 Richard Groves
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +24,14 @@
  *
  */
 
-
 #import "cocos2d.h"
 
-@interface LineDrawer : CCNode
+@protocol LineDrawGestureRecognizerDelegate <UIGestureRecognizerDelegate>;
+@optional
+- (void) gestureRecognizer:(UIGestureRecognizer *)gr beganWithTouches:(NSSet<UITouch*>*)touches andEvent:(UIEvent *)event;
+- (void) gestureRecognizer:(UIGestureRecognizer *)gr movedWithTouches:(NSSet<UITouch*>*)touches andEvent:(UIEvent *)event;
+- (void) gestureRecognizer:(UIGestureRecognizer *)gr endedWithTouches:(NSSet<UITouch*>*)touches andEvent:(UIEvent *)event;
+@end
+
+@interface LineDrawer : CCNode <LineDrawGestureRecognizerDelegate>
 @end
